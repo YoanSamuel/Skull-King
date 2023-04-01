@@ -1,1 +1,3 @@
 creer des joueurs
+a chaque creation de gameroom coller un cookie de session au cul des joueurs
+et pour tous les joueurs qui integrent la partie
