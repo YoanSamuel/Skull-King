@@ -1,0 +1,34 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello GameRoomController!{% endblock %}
+
+{% block body %}
+<style>
+    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+</style>
+
+<div class="example-wrapper">
+    <h1>Hello {{ controller_name }}! ✅</h1>
+
+    This friendly message is coming from:
+    <ul>
+        <li>Your controller at <code><a href="{{ 'C:/Users/utilisateur/Documents/skull-king/src/Controller/GameRoomController.php'|file_link(0) }}">src/Controller/GameRoomController.php</a></code></li>
+        <li>Your template at <code><a href="{{ 'C:/Users/utilisateur/Documents/skull-king/templates/game_room/index.html.twig'|file_link(0) }}">templates/game_room/index.html.twig</a></code></li>
+    </ul>
+</div>
+
+    <div>
+        {{ form(form) }}
+
+        {% if isEmpty == true %}
+            <p>Il n'y a pas de salon de jeux pour le moment.</p>
+        {% endif %}
+        <ul>
+            {% for room in gameRooms %}
+                <li>{{ room.id }} {{ room.createdAt| date("Y/m/d") }}</li>
+
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
