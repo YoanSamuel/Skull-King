@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello GameRoomController!{% endblock %}
+
+{% block body %}
+    <style>
+        .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
+        .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
+    </style>
+
+    <div class="example-wrapper">
+        <h1>Welcome to skull-king current game room ✅</h1>
+
+        <h1>Le joueur {{ userEmail }} a joué la carte {{ randomCard }}
+                avec la couleur {{ color }}✅</h1>
+
+
+
+
+    <div class="row">
+        <script src="{{ asset('js/index.js') }}"></script>
+    </div>
+{% endblock %}
