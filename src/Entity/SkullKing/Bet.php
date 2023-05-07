@@ -14,6 +14,11 @@ class Bet
         $this->playerName = $playerName;
         $this->betValue = $betValue;
     }
+    public static function of(string $playerName, int $betValue): Bet
+    {
+
+        return new Bet($playerName, $betValue);
+    }
 
     public function getPlayerName(): string
     {

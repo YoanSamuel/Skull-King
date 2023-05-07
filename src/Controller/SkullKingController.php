@@ -34,10 +34,10 @@ class SkullKingController
     }
 
 
-    /**
-     * @Route("/games", name="create-game", methods={"POST"})
-     * @throws \Throwable
-     */
+
+
+
+    #[Route("/games", name:"create-game", methods:["POST"])]
     public function create(): Response
     {
         $user = $this->userService->getUserOrThrow();
@@ -53,10 +53,8 @@ class SkullKingController
         return new JsonResponse(["id" => $gameId->value()], 201, ['Content-Type' => 'application/json']);
     }
 
-    /**
-     * @Route("/games/{id}/join", name="join-game", methods={"POST"})
-     * @throws \Throwable
-     */
+
+    #[Route("/games/{id}/join", name:"join-game", methods:["POST"])]
     public function join(string $id): Response
     {
         $user = $this->userService->getUserOrThrow();
@@ -73,10 +71,8 @@ class SkullKingController
         return new Response(null, 201);
     }
 
-    /**
-     * @Route("/games/{id}/start", name="start-game", methods={"POST"})
-     * @throws \Throwable
-     */
+
+    #[Route("/games/{id}/start", name:"start-game", methods:["POST"])]
     public function start(string $id): Response
     {
         $this->em->wrapInTransaction(function () use ($id) {

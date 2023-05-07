@@ -43,13 +43,13 @@ class SkullKing
         $this->turn = PlayerTurn::init($this->playersNames, $this->diceLauncher);
     }
 
-    public function bet(string $playerName, int $diceNumber, int $diceValue)
+    public function bet(string $playerName, int $betValue)
     {
         if ($playerName != $this->currentPlayerName()) {
             throw new InvalidArgumentException("Tu essaies de tricher ce n'est pas à toi de jouer!");
         }
 
-        $this->lastBet = Bet::of($playerName, $diceNumber, $this->lastBet);
+        $this->lastBet = Bet::of($playerName, $betValue);
         $this->turn->goNext();
     }
 
