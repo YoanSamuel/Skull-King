@@ -26,7 +26,18 @@
         {% endif %}
         <ul>
             {% for room in gameRooms %}
-                <li>{{ room.id }} {{ room.createdAt| date("Y/m/d") }}</li>
+                <li>{{ room.id }}
+                    {{ room.createdAt| date("Y/m/d") }}
+                    {% if (room.users| length < 6) and (room.containsCurrentUser == false)  %}
+                     <form id="{{ room.id }}" action="{{ path("join_game_room", { id: room.id})  }}" method ="POST">
+                         <button type="submit"> REJOINDRE </button>
+                     </form>
+                    {% endif %}
+                    {% if room.containsCurrentUser == true %}
+                    <a href="{{ path('waiting_game_room', { id: room.id }) }}">Aller dans la Salle de jeux</a>
+                    {% endif %}
+
+                </li>
 
             {% endfor %}
         </ul>

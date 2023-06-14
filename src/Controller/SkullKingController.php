@@ -2,111 +2,107 @@
 
 namespace App\Controller;
 
-use App\Entity\GameId;
-use App\Entity\SkullKing\SkullKing;
-use App\Repository\SkullKingDoctrineRepository;
-use App\Repository\SkullKingFirebaseRepository;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Entity\SkullKing;
+use App\Repository\GameRoomRepository;
+use App\Repository\SkullKingRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Service\UserService;
+use Symfony\Component\Uid\Uuid;
 
-class SkullKingController
+
+class SkullKingController extends AbstractController
 {
 
-    private SkullKingDoctrineRepository $repository;
-    private EntityManager $em;
-    private SkullKingFirebaseRepository $firebaseRepository;
-    private UserService $userService;
+    private GameRoomRepository $gameRoomRepository;
+    private SkullKingRepository $skullKingRepo;
 
-    public function __construct(EntityManagerInterface   $em,
-                                SkullKingDoctrineRepository $repository,
-                                SkullKingFirebaseRepository $firebaseRepository,
-                                UserService              $userService)
+
+    public function __construct(GameRoomRepository  $gameRoomRepository,
+                                SkullKingRepository $skullKingRepo)
     {
-        $this->repository = $repository;
-        $this->em = $em;
-        $this->firebaseRepository = $firebaseRepository;
-        $this->userService = $userService;
+
+        $this->gameRoomRepository = $gameRoomRepository;
+        $this->skullKingRepo = $skullKingRepo;
     }
 
 
-
-
-
-    #[Route("/games", name:"create-game", methods:["POST"])]
-    public function create(): Response
+    #[Route('/game/{id}', name: 'current_game', methods: ["GET"])]
+    public function currentGame($id, Request $request): Response
     {
-        $user = $this->userService->getUserOrThrow();
-        $gameId = $this->em->wrapInTransaction(function () use ($user) {
-            $skullking = new SkullKing();
-            $skullking->join($user->gameUserId());
+        $skull = $this->skullKingRepo->find($id);
+        $userId = new Uuid($request->cookies->get('userid'));
+        $currentPlayer = $skull->findPlayer($userId);
+        $gamePhase = $skull->getState();
+        // Champ Annonce
+        $announceValues = [];
+        for ($i = 0; $i <= $skull->getNbRound(); $i++) {
+            $announceValues[] = $i;
+        }
 
-            $gameId = $this->repository->save($skullking);
-            $this->firebaseRepository->project($gameId, $skullking);
-            return $gameId;
-        });
-
-        return new JsonResponse(["id" => $gameId->value()], 201, ['Content-Type' => 'application/json']);
+        return $this->render("game/index.html.twig", [
+            'id' => $id,
+            'announceValues' => $announceValues,
+            'cards' => $currentPlayer->getCards(),
+            'gamePhase' => $gamePhase
+        ]);
     }
 
 
-    #[Route("/games/{id}/join", name:"join-game", methods:["POST"])]
-    public function join(string $id): Response
+    #[Route('/game/{id}/announce/{announce}', name: 'announce_before_play_round', methods: ["POST"])]
+    public function announcePli($id, $announce, Request $request): Response
     {
-        $user = $this->userService->getUserOrThrow();
-        $this->em->wrapInTransaction(function () use ($user, $id) {
-            $gameId = new GameId($id);
-            $skullking = $this->repository->find($gameId);
+        $skull = $this->skullKingRepo->find($id);
+        $userId = new Uuid($request->cookies->get('userid'));
+        $skull->announce($userId, $announce);
 
-            $skullking->join($user->gameUserId());
 
-            $this->repository->save($skullking, $gameId);
-            $this->firebaseRepository->project($gameId, $skullking);
-        });
+        $this->skullKingRepo->save($skull, true);
 
-        return new Response(null, 201);
+        return $this->redirectToRoute('current_game',
+            [
+                'id' => $id,
+            ]
+        );
+
     }
 
 
-    #[Route("/games/{id}/start", name:"start-game", methods:["POST"])]
-    public function start(string $id): Response
+    #[Route('/game/{id}/play', name: 'play_card', methods: ["POST"])]
+    public function playCard($id, Request $request)
     {
-        $this->em->wrapInTransaction(function () use ($id) {
-            $gameId = new GameId($id);
-            $skullking = $this->repository->find($gameId);
 
-            $skullking->start();
+        $gameRoom = $this->gameRoomRepository->findOneBy(['id' => $id]);
+        $users = $gameRoom->getUsers();
+        $skull = new SkullKing($users);
+        $players = $skull->getPlayers();
 
-            $this->repository->save($skullking, $gameId);
-            $this->firebaseRepository->project($gameId, $skullking);
-        });
 
-        return new Response(null, 201);
-    }
+        // Effectuer les traitements nécessaires pour jouer la carte
+        foreach ($players as $player) {
 
-    /**
-     * @Route("/games/{id}/bet", name="bet", methods={"POST"})
-     * @throws \Throwable
-     */
-    public function bet(string $id, Request $request): Response
-    {
-        $user = $this->userService->getUserOrThrow();
-        $body = json_decode($request->getContent(), true);
-        $this->em->wrapInTransaction(function () use ($body, $user, $id) {
-            $gameId = new GameId($id);
-            $skullking = $this->repository->find($gameId);
+            $userId = $player->getUserId();
+            $card = (int)$request->cookies->get('card');
 
-            $skullking->bet($user->gameUserId(), $body['number'], $body['value']);
+            $skull->playCard($userId, $card);
 
-            $this->repository->save($skullking, $gameId);
-            $this->firebaseRepository->project($gameId, $skullking);
-        });
+        }
+//
+//        // Passer au joueur suivant
+//        $this->nextPlayer();
+//
+//        // Vérifier si c'est la fin de la manche
+//        if ($this->isRoundOver()) {
+//            // Résoudre la manche
+//            $this->resolveRound();
+//
+//            // Passer au tour suivant
+//            $this->nextRound();
+//        }
 
-        return new Response(null, 201);
+        // Rediriger vers une autre page ou retourner une réponse JSON, selon les besoins de votre application
+        return $this->redirectToRoute('current_game');
     }
 
 

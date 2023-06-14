@@ -2,26 +2,19 @@
 
 namespace App\Repository;
 
-use App\Entity\GameRoom;
+
+use App\Entity\SkullKing;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-/**
- * @extends ServiceEntityRepository<GameRoom>
- *
- * @method GameRoom|null find($id, $lockMode = null, $lockVersion = null)
- * @method GameRoom|null findOneBy(array $criteria, array $orderBy = null)
- * @method GameRoom[]    findAll()
- * @method GameRoom[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
- */
-class GameRoomRepository extends ServiceEntityRepository
+class SkullKingRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, GameRoom::class);
+        parent::__construct($registry, SkullKing::class);
     }
 
-    public function save(GameRoom $entity, bool $flush = false): void
+    public function save(SkullKing $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
 
@@ -30,7 +23,7 @@ class GameRoomRepository extends ServiceEntityRepository
         }
     }
 
-    public function remove(GameRoom $entity, bool $flush = false): void
+    public function remove(SkullKing $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
 
@@ -40,7 +33,7 @@ class GameRoomRepository extends ServiceEntityRepository
     }
 
 //    /**
-//     * @return GameRoom[] Returns an array of GameRoom objects
+//     * @return SkullKing[] Returns an array of SkullKing objects
 //     */
 //    public function findByExampleField($value): array
 //    {
@@ -54,7 +47,7 @@ class GameRoomRepository extends ServiceEntityRepository
 //        ;
 //    }
 
-//    public function findOneBySomeField($value): ?GameRoom
+//    public function findOneBySomeField($value): ?SkullKing
 //    {
 //        return $this->createQueryBuilder('g')
 //            ->andWhere('g.exampleField = :val')
@@ -63,11 +56,12 @@ class GameRoomRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
-    public function findAllWithUsers() : array
+    public function findAllWithUsers(): array
     {
         return $this->createQueryBuilder('gr')->addSelect(['gru'])
             ->leftJoin('gr.users', 'gru')
             ->getQuery()->getResult();
     }
-    
+
 }
+
