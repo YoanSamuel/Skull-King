@@ -29,6 +29,9 @@ class SkullKing
     #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: Player::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $players;
 
+    #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: Card::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $fold;
+
 
     /**
      * @throws Exception
@@ -37,15 +40,16 @@ class SkullKing
     {
 
         if (count($users) < 2) {
-            throw new Exception('NUL GERMAIN');
+            throw new Exception('Il n\'y a pas assez de joueurs dans cette partie.');
         }
 
         $this->players = new ArrayCollection();
         foreach ($users as $user) {
-            $this->players->add(new Player($this, $user->getUserId(), new ArrayCollection([$deck->pop()])));
+
+            $this->players->add(new Player($this, $user->getUserId(), new ArrayCollection([$deck->pop()]), null));
 
         }
-
+        $this->fold = new ArrayCollection();
         $this->state = SkullKingPhase::ANNOUNCE->value;
 
     }
@@ -60,13 +64,19 @@ class SkullKing
 
     public function announce(Uuid $userId, int $announce): void
     {
-
+        $count = 0;
         $player = $this->findPlayer($userId);
-
         $player->setAnnounce($announce);
-        if ($this->players)
-            $this->isGamePhase();
 
+        foreach ($this->players as $playerInGame) {
+            if ($playerInGame->getAnnounce() != null) {
+                $count++;
+            }
+        }
+
+        if ($count == count($this->players)) {
+            $this->state = SkullKingPhase::PLAYCARD->value;
+        }
     }
 
     public function getAnnouncePerPlayer(Uuid $userId): int
@@ -98,6 +108,22 @@ class SkullKing
     public function getPlayers(): Collection
     {
         return $this->players;
+    }
+
+    /**
+     * @return Collection<int, Card>
+     */
+    public function getFold(): Collection
+    {
+        return $this->fold;
+    }
+
+    public function playCard(Uuid $userId, string $card): void
+    {
+        $player = $this->findPlayer($userId);
+        $dop = $this->fold->add($player->getCards());
+
+        var_dump($this->fold);
     }
 
     public function isGamePhase(): void

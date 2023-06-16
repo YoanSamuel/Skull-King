@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20230523120208 extends AbstractMigration
+final class Version20230615155034 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -20,16 +20,17 @@ final class Version20230523120208 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-//        $this->addSql('DROP SEQUENCE skull_king_id_seq CASCADE');
-//        $this->addSql('DROP TABLE skull_king');
+        $this->addSql('ALTER TABLE card ADD skull_king_id INT NOT NULL');
+        $this->addSql('ALTER TABLE card ADD CONSTRAINT FK_161498D39CCC4B62 FOREIGN KEY (skull_king_id) REFERENCES skull_king (id) NOT DEFERRABLE INITIALLY IMMEDIATE');
+        $this->addSql('CREATE INDEX IDX_161498D39CCC4B62 ON card (skull_king_id)');
     }
 
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
         $this->addSql('CREATE SCHEMA public');
-        $this->addSql('CREATE SEQUENCE skull_king_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
-        $this->addSql('CREATE TABLE skull_king (id INT NOT NULL, created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, PRIMARY KEY(id))');
-        $this->addSql('COMMENT ON COLUMN skull_king.created_at IS \'(DC2Type:datetime_immutable)\'');
+        $this->addSql('ALTER TABLE card DROP CONSTRAINT FK_161498D39CCC4B62');
+        $this->addSql('DROP INDEX IDX_161498D39CCC4B62');
+        $this->addSql('ALTER TABLE card DROP skull_king_id');
     }
 }

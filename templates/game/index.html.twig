@@ -3,27 +3,31 @@
 {% block title %}Hello SkullController!{% endblock %}
 
 {% block body %}
-
-
     <div class="example-wrapper">
         <h1>Hello les pirates ✅</h1>
 
         This friendly message is coming from: billy
 
     </div>
-    {% for announce in announceValues %}
-        <form action="{{ path("announce_before_play_round", { id: id, announce: announce}) }}" method="POST">
-            <button type="submit"> {{ announce }}</button>
-        </form>
-    {% endfor %}
+    {% if gamePhase == 'ANNOUNCE' %}
+        {% for announce in announceValues %}
+            <form action="{{ path("announce_before_play_round", { id: id, announce: announce}) }}" method="POST">
+                <button type="submit"> {{ announce }}</button>
+            </form>
+        {% endfor %}
+    {% endif %}
+
 
     {% for card in cards %}
-        <span>
-           {{ card.cardType }}
-       </span>
+        <p>Votre main : </p>
+        <br>
+        <div>
+            <form action="{{ path("play_card", { id: id, card: card }) }}" method="POST">
+                <button type="submit"> {{ card.cardType }}</button>
+            </form>
+            <span> {{ gamePhase }}</span>
+        </div>
     {% endfor %}
-
-    <span> {{ gamePhase }}</span>
 {% endblock %}
 
 

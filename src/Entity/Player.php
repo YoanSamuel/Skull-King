@@ -24,14 +24,14 @@ class Player
     #[ORM\OneToMany(mappedBy: 'player', targetEntity: Card::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $cards;
 
-    #[ORM\Column]
-    private int $announce;
+    #[ORM\Column(nullable: true)]
+    private ?int $announce;
 
     #[ORM\ManyToOne(inversedBy: 'players')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?SkullKing $skullKing = null;
+    private ?SkullKing $skullKing;
 
-    public function __construct(SkullKing $skullKing, Uuid $userId, Collection $cards, int $announce = 0)
+    public function __construct(SkullKing $skullKing, Uuid $userId, Collection $cards, ?int $announce)
     {
 
         $this->userId = $userId;
@@ -48,10 +48,10 @@ class Player
         return $this->cards;
     }
 
-//    public function setCards(Collection $cards)
-//    {
-//        $this->cards = $cards;
-//    }
+    public function setCards(Collection $cards)
+    {
+        $this->cards = $cards;
+    }
 
     public function getUserId(): ?Uuid
     {
@@ -59,7 +59,7 @@ class Player
     }
 
 
-    public function getAnnounce(): int
+    public function getAnnounce(): int|null
     {
         return $this->announce;
     }
