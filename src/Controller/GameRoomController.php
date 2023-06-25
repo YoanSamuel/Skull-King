@@ -11,6 +11,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Uid\Uuid;
 
@@ -18,11 +20,14 @@ class GameRoomController extends AbstractController
 {
 
     private GameRoomRepository $gameRoomRepository;
+    private HubInterface $hub;
 
-
-    public function __construct(GameRoomRepository $gameRoomRepository)
+    public function __construct(GameRoomRepository $gameRoomRepository,
+                                HubInterface       $hub)
     {
         $this->gameRoomRepository = $gameRoomRepository;
+        $this->hub = $hub;
+
     }
 
     #[Route('/game/room', name: 'app_game_room', methods: ["GET"])]
@@ -78,6 +83,8 @@ class GameRoomController extends AbstractController
 
         $currentGame->addUser($user);
         $this->gameRoomRepository->save($currentGame, true);
+        $topicName = "game_room_topic_$id";
+        $this->hub->publish(new Update($topicName, json_encode(['status' => 'player_joined'])));
 
 
         return $this->redirectToRoute("waiting_game_room", ['id' => $currentGame->getId()]);
@@ -88,11 +95,13 @@ class GameRoomController extends AbstractController
     {
 
         $currentGame = $this->gameRoomRepository->findOneBy(['id' => $id]);
+        $topicName = "game_room_topic_$id";
 
         return $this->render("game_room/currentGame.html.twig", [
             'roomid' => $currentGame->getId(),
             'users' => $currentGame->getUsers(),
             'skullkingid' => $currentGame->getSkullKing()?->getId(),
+            'topicName' => $topicName
         ]);
     }
 
@@ -111,8 +120,16 @@ class GameRoomController extends AbstractController
         $gameRoom->setSkullKing($skull);
         $this->gameRoomRepository->save($gameRoom, true);
 
-        return $this->redirectToRoute('current_game',
-            ['id' => $skull->getId()]);
+        $response = $this->redirectToRoute('current_game', ['id' => $skull->getId()]);
+        $topicName = "game_room_topic_$id";
+        $this->hub->publish(new Update(
+            $topicName, json_encode([
+            'status' => 'game_started',
+            'game_url' => $response->getTargetUrl()
+        ])));
+
+
+        return $response;
     }
 
 }

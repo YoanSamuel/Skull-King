@@ -40,6 +40,19 @@
 
 
     <div class="row">
-        <script src="{{ asset('js/index.js') }}"></script>
+        <script>
+            const eventSource = new EventSource("{{ mercure(topicName)|escape('js') }}");
+            eventSource.onmessage = event => {
+                // Will be called every time an update is published by the server
+                console.log(JSON.parse(event.data));
+                const data = JSON.parse(event.data);
+                if (data.status === 'player_joined') {
+                    window.location.reload();
+                }
+                if (data.status === 'game_started') {
+                    window.location.href = data.game_url;
+                }
+            }
+        </script>
     </div>
 {% endblock %}
