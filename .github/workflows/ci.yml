@@ -12,6 +12,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - uses: shivammathur/setup-php@2.16.0
+        with:
+          extensions: ext/http
 
       - name: Get composer cache directory
         id: composer-cache
@@ -25,7 +27,7 @@ jobs:
           restore-keys: ${{ runner.os }}-composer-
 
       - name: Install dependencies
-        run:  composer install --prefer-dist
+        run: composer install --prefer-dist
 
       - name: Run tests
         run: ./vendor/bin/phpunit
