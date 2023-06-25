@@ -1,8 +1,18 @@
 mercure:
+  hubs:
+    default:
+      url: '%env(MERCURE_URL)%'
+      public_url: '%env(MERCURE_PUBLIC_URL)%'
+      jwt:
+        secret: '%env(MERCURE_JWT_SECRET)%'
+        publish: '*'
+
+when@prod:
+  mercure:
     hubs:
-        default:
-            url: '%env(MERCURE_URL)%'
-            public_url: '%env(MERCURE_PUBLIC_URL)%'
-            jwt:
-                secret: '%env(MERCURE_JWT_SECRET)%'
-                publish: '*'
+      default:
+        url: '%env(STACKHERO_MERCURE_HUB_HOST)%'
+        public_url: '%env(STACKHERO_MERCURE_HUB_HOST)%'
+        jwt:
+          secret: '%env(STACKHERO_MERCURE_HUB_PUBLISHER_JWT_KEY)%'
+          publish: '*'
