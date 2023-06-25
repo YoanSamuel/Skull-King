@@ -6,6 +6,7 @@
     "require": {
         "php": ">=8.1",
         "ext-ctype": "*",
+        "ext-http": "*",
         "ext-iconv": "*",
         "doctrine/annotations": "^2.0",
         "doctrine/doctrine-bundle": "^2.9",
@@ -26,7 +27,7 @@
         "symfony/intl": "5.4.*",
         "symfony/mailer": "5.4.*",
         "symfony/mime": "5.4.*",
-        "symfony/monolog-bundle": "^3.0",
+        "symfony/monolog-bundle": "^3.8",
         "symfony/notifier": "5.4.*",
         "symfony/process": "5.4.*",
         "symfony/property-access": "5.4.*",
@@ -43,8 +44,7 @@
         "symfony/yaml": "5.4.*",
         "symfonycasts/verify-email-bundle": "^1.13",
         "twig/extra-bundle": "^2.12|^3.0",
-        "twig/twig": "^2.12|^3.0",
-      "ext-http": "*"
+        "twig/twig": "^2.12|^3.0"
     },
     "config": {
         "allow-plugins": {
