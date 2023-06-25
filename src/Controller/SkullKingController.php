@@ -34,12 +34,14 @@ class SkullKingController extends AbstractController
         for ($i = 0; $i <= $skull->getNbRound(); $i++) {
             $announceValues[] = $i;
         }
+        $fold = [];
 
         return $this->render("game/index.html.twig", [
             'id' => $id,
             'announceValues' => $announceValues,
             'cards' => $currentPlayer->getCards(),
-            'gamePhase' => $gamePhase
+            'gamePhase' => $gamePhase,
+            'fold' => $fold
         ]);
     }
 
@@ -53,27 +55,19 @@ class SkullKingController extends AbstractController
 
         $this->skullKingRepo->save($skull, true);
 
-        return $this->redirectToRoute('current_game',
-            [
-                'id' => $id,
-            ]
-        );
-
+        return $this->redirectToRoute('current_game', ['id' => $id,]);
     }
 
 
     #[Route('/game/{id}/play/{card}', name: 'play_card', methods: ["POST"])]
-    public function playCard($id, string $card, Request $request)
+    public function playCard($id, $card, Request $request)
     {
         $skull = $this->skullKingRepo->find($id);
         $userId = new Uuid($request->cookies->get('userid'));
         $skull->playCard($userId, $card);
 
-
-        return $this->redirectToRoute('current_game',
-            [
-                'id' => $id,
-            ]);
+        $this->skullKingRepo->save($skull, true);
+        return $this->redirectToRoute('current_game', ['id' => $id]);
     }
 
 

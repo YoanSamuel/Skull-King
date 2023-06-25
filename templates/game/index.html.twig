@@ -19,15 +19,26 @@
 
 
     {% for card in cards %}
-        <p>Votre main : </p>
+        <p>Votre main : {{ card.cardType }} </p>
+
         <br>
         <div>
-            <form action="{{ path("play_card", { id: id, card: card }) }}" method="POST">
-                <button type="submit"> {{ card.cardType }}</button>
-            </form>
-            <span> {{ gamePhase }}</span>
+            {% if gamePhase == 'PLAYCARD' %}
+                <form action="{{ path("play_card", { id: id, card: card.cardType }) }}" method="POST">
+                    <button type="submit"> {{ card.cardType }}</button>
+                </form>
+            {% endif %}
         </div>
+
+        <span> {{ gamePhase }}</span>
     {% endfor %}
+
+    {% for fol in fold %}
+        <p>la pli : {{ fol }} </p>
+    {% endfor %}
+
+
+
 {% endblock %}
 
 

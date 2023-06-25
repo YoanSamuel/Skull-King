@@ -121,9 +121,17 @@ class SkullKing
     public function playCard(Uuid $userId, string $card): void
     {
         $player = $this->findPlayer($userId);
-        $dop = $this->fold->add($player->getCards());
+        $cards = $player->getCards();
+        
 
-        var_dump($this->fold);
+    }
+
+    /**
+     * @param Collection $fold
+     */
+    public function setFold(Collection $fold): void
+    {
+        $this->fold = $fold;
     }
 
     public function isGamePhase(): void

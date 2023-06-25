@@ -31,7 +31,7 @@ class Player
     #[ORM\JoinColumn(nullable: false)]
     private ?SkullKing $skullKing;
 
-    public function __construct(SkullKing $skullKing, Uuid $userId, Collection $cards, ?int $announce)
+    public function __construct(SkullKing $skullKing, Uuid $userId, Collection $cards, ?int $announce = null)
     {
 
         $this->userId = $userId;
@@ -81,6 +81,5 @@ class Player
 
         return $this;
     }
-
 
 }

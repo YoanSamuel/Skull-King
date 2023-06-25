@@ -30,8 +30,8 @@ class Card
     private ?Player $player = null;
 
     #[ORM\ManyToOne(inversedBy: 'fold')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?SkullKing $skullKing;
+    #[ORM\JoinColumn(nullable: false)]
+    private ?SkullKing $skullKing = null;
 
     /**
      * @param int|null $id
