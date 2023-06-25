@@ -11,8 +11,8 @@ when@prod:
   mercure:
     hubs:
       default:
-        url: '%env(STACKHERO_MERCURE_HUB_HOST)%'
-        public_url: '%env(STACKHERO_MERCURE_HUB_HOST)%'
+        url: 'https://%env(STACKHERO_MERCURE_HUB_HOST)%/.well-known/mercure'
+        public_url: 'https://%env(STACKHERO_MERCURE_HUB_HOST)%/.well-known/mercure'
         jwt:
           secret: '%env(STACKHERO_MERCURE_HUB_PUBLISHER_JWT_KEY)%'
           publish: '*'
