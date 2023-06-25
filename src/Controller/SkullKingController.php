@@ -2,111 +2,72 @@
 
 namespace App\Controller;
 
-use App\Entity\GameId;
-use App\Entity\SkullKing\SkullKing;
-use App\Repository\SkullKingDoctrineRepository;
-use App\Repository\SkullKingFirebaseRepository;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use App\Repository\SkullKingRepository;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use App\Service\UserService;
+use Symfony\Component\Uid\Uuid;
 
-class SkullKingController
+
+class SkullKingController extends AbstractController
 {
 
-    private SkullKingDoctrineRepository $repository;
-    private EntityManager $em;
-    private SkullKingFirebaseRepository $firebaseRepository;
-    private UserService $userService;
+    private SkullKingRepository $skullKingRepo;
 
-    public function __construct(EntityManagerInterface   $em,
-                                SkullKingDoctrineRepository $repository,
-                                SkullKingFirebaseRepository $firebaseRepository,
-                                UserService              $userService)
+
+    public function __construct(SkullKingRepository $skullKingRepo)
     {
-        $this->repository = $repository;
-        $this->em = $em;
-        $this->firebaseRepository = $firebaseRepository;
-        $this->userService = $userService;
+        $this->skullKingRepo = $skullKingRepo;
     }
 
 
-
-
-
-    #[Route("/games", name:"create-game", methods:["POST"])]
-    public function create(): Response
+    #[Route('/game/{id}', name: 'current_game', methods: ["GET"])]
+    public function currentGame($id, Request $request): Response
     {
-        $user = $this->userService->getUserOrThrow();
-        $gameId = $this->em->wrapInTransaction(function () use ($user) {
-            $skullking = new SkullKing();
-            $skullking->join($user->gameUserId());
+        $skull = $this->skullKingRepo->find($id);
+        $userId = new Uuid($request->cookies->get('userid'));
+        $currentPlayer = $skull->findPlayer($userId);
+        $gamePhase = $skull->getState();
+        // Champ Annonce
+        $announceValues = [];
+        for ($i = 0; $i <= $skull->getNbRound(); $i++) {
+            $announceValues[] = $i;
+        }
+        $fold = [];
 
-            $gameId = $this->repository->save($skullking);
-            $this->firebaseRepository->project($gameId, $skullking);
-            return $gameId;
-        });
-
-        return new JsonResponse(["id" => $gameId->value()], 201, ['Content-Type' => 'application/json']);
+        return $this->render("game/index.html.twig", [
+            'id' => $id,
+            'announceValues' => $announceValues,
+            'cards' => $currentPlayer->getCards(),
+            'gamePhase' => $gamePhase,
+            'fold' => $fold
+        ]);
     }
 
 
-    #[Route("/games/{id}/join", name:"join-game", methods:["POST"])]
-    public function join(string $id): Response
+    #[Route('/game/{id}/announce/{announce}', name: 'announce_before_play_round', methods: ["POST"])]
+    public function announce($id, $announce, Request $request): Response
     {
-        $user = $this->userService->getUserOrThrow();
-        $this->em->wrapInTransaction(function () use ($user, $id) {
-            $gameId = new GameId($id);
-            $skullking = $this->repository->find($gameId);
+        $skull = $this->skullKingRepo->find($id);
+        $userId = new Uuid($request->cookies->get('userid'));
+        $skull->announce($userId, $announce);
 
-            $skullking->join($user->gameUserId());
+        $this->skullKingRepo->save($skull, true);
 
-            $this->repository->save($skullking, $gameId);
-            $this->firebaseRepository->project($gameId, $skullking);
-        });
-
-        return new Response(null, 201);
+        return $this->redirectToRoute('current_game', ['id' => $id,]);
     }
 
 
-    #[Route("/games/{id}/start", name:"start-game", methods:["POST"])]
-    public function start(string $id): Response
+    #[Route('/game/{id}/play/{card}', name: 'play_card', methods: ["POST"])]
+    public function playCard($id, $card, Request $request)
     {
-        $this->em->wrapInTransaction(function () use ($id) {
-            $gameId = new GameId($id);
-            $skullking = $this->repository->find($gameId);
+        $skull = $this->skullKingRepo->find($id);
+        $userId = new Uuid($request->cookies->get('userid'));
+        $skull->playCard($userId, $card);
 
-            $skullking->start();
-
-            $this->repository->save($skullking, $gameId);
-            $this->firebaseRepository->project($gameId, $skullking);
-        });
-
-        return new Response(null, 201);
-    }
-
-    /**
-     * @Route("/games/{id}/bet", name="bet", methods={"POST"})
-     * @throws \Throwable
-     */
-    public function bet(string $id, Request $request): Response
-    {
-        $user = $this->userService->getUserOrThrow();
-        $body = json_decode($request->getContent(), true);
-        $this->em->wrapInTransaction(function () use ($body, $user, $id) {
-            $gameId = new GameId($id);
-            $skullking = $this->repository->find($gameId);
-
-            $skullking->bet($user->gameUserId(), $body['number'], $body['value']);
-
-            $this->repository->save($skullking, $gameId);
-            $this->firebaseRepository->project($gameId, $skullking);
-        });
-
-        return new Response(null, 201);
+        $this->skullKingRepo->save($skull, true);
+        return $this->redirectToRoute('current_game', ['id' => $id]);
     }
 
 

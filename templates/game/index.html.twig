@@ -1,0 +1,48 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello SkullController!{% endblock %}
+
+{% block body %}
+    <div class="example-wrapper">
+        <h1>Hello les pirates ✅</h1>
+
+        This friendly message is coming from: billy
+
+    </div>
+    {% if gamePhase == 'ANNOUNCE' %}
+        {% for announce in announceValues %}
+            <form action="{{ path("announce_before_play_round", { id: id, announce: announce}) }}" method="POST">
+                <button type="submit"> {{ announce }}</button>
+            </form>
+        {% endfor %}
+    {% endif %}
+
+
+    {% for card in cards %}
+        <p>Votre main : {{ card.cardType }} </p>
+
+        <br>
+        <div>
+            {% if gamePhase == 'PLAYCARD' %}
+                <form action="{{ path("play_card", { id: id, card: card.cardType }) }}" method="POST">
+                    <button type="submit"> {{ card.cardType }}</button>
+                </form>
+            {% endif %}
+        </div>
+
+        <span> {{ gamePhase }}</span>
+    {% endfor %}
+
+    {% for fol in fold %}
+        <p>la pli : {{ fol }} </p>
+    {% endfor %}
+
+
+
+{% endblock %}
+
+
+
+{# annonce seté sur le player en base
+des que tous les joueurs ont misé stop plus de modifications d'annonces
+serveur doit envoyer un message pour commencer la partie #}
