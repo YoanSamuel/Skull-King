@@ -30,6 +30,14 @@ jobs:
       - name: Run tests
         run: ./vendor/bin/phpunit
 
+      - name: Use Node.js 14.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 14.x
+
+      - name: build javascript
+        run: npm i && npm run build
+
   deploy-back:
     needs: build-back
     name: Deploy back
