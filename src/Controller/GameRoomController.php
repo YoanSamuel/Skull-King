@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Controller\dto\UserDTO;
 use App\Entity\GameRoom;
 use App\Entity\GameRoomUser;
 use App\Entity\SkullKing;
@@ -84,7 +85,10 @@ class GameRoomController extends AbstractController
         $currentGame->addUser($user);
         $this->gameRoomRepository->save($currentGame, true);
         $topicName = "game_room_topic_$id";
-        $this->hub->publish(new Update($topicName, json_encode(['status' => 'player_joined'])));
+        $this->hub->publish(new Update($topicName, json_encode([
+            'status' => 'player_joined',
+            'user' => new UserDTO($user)
+        ])));
 
 
         return $this->redirectToRoute("waiting_game_room", ['id' => $currentGame->getId()]);
@@ -93,17 +97,19 @@ class GameRoomController extends AbstractController
     #[Route('/game/room/{id}', name: 'waiting_game_room', methods: ["GET"])]
     public function enterInCurrentGameRoom($id): Response
     {
-
         $currentGame = $this->gameRoomRepository->findOneBy(['id' => $id]);
         $topicName = "game_room_topic_$id";
 
         return $this->render("game_room/currentGame.html.twig", [
             'roomid' => $currentGame->getId(),
-            'users' => $currentGame->getUsers(),
+            'users' => array_map(function (GameRoomUser $user) {
+                return new UserDTO($user);
+            }, $currentGame->getUsers()->toArray()),
             'skullkingid' => $currentGame->getSkullKing()?->getId(),
             'topicName' => $topicName
         ]);
     }
+
 
     /**
      * @throws \Exception

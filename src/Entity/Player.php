@@ -21,6 +21,9 @@ class Player
     #[ORM\Column(type: 'uuid')]
     private Uuid $userId;
 
+    #[ORM\Column]
+    private string $name;
+
     #[ORM\OneToMany(mappedBy: 'player', targetEntity: Card::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $cards;
 
@@ -31,16 +34,22 @@ class Player
     #[ORM\JoinColumn(nullable: false)]
     private ?SkullKing $skullKing;
 
-    public function __construct(SkullKing $skullKing, Uuid $userId, Collection $cards, ?int $announce = null)
+    public function __construct(SkullKing $skullKing, GameRoomUser $user, Collection $cards, ?int $announce = null)
     {
 
-        $this->userId = $userId;
+        $this->userId = $user->getUserId();
+        $this->name = $user->getUserName();
         $this->cards = new ArrayCollection();
         foreach ($cards as $card) {
             $this->cards->add($card->setPlayer($this));
         }
         $this->announce = $announce;
         $this->skullKing = $skullKing;
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
     }
 
     public function getCards(): Collection
@@ -53,11 +62,15 @@ class Player
         $this->cards = $cards;
     }
 
-    public function getUserId(): ?Uuid
+    public function getUserId(): Uuid
     {
         return $this->userId;
     }
 
+    public function getName(): string
+    {
+        return $this->name;
+    }
 
     public function getAnnounce(): int|null
     {

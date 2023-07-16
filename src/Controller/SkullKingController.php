@@ -2,10 +2,17 @@
 
 namespace App\Controller;
 
+use App\Controller\dto\CardDTO;
+use App\Controller\dto\PlayerDTO;
+use App\Entity\Card;
+use App\Entity\Player;
+use App\Repository\GameRoomRepository;
 use App\Repository\SkullKingRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mercure\HubInterface;
+use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Uid\Uuid;
 
@@ -14,11 +21,18 @@ class SkullKingController extends AbstractController
 {
 
     private SkullKingRepository $skullKingRepo;
+    private GameRoomRepository $gameRoomRepo;
+    private HubInterface $hub;
 
 
-    public function __construct(SkullKingRepository $skullKingRepo)
+    public function __construct(SkullKingRepository $skullKingRepo,
+                                GameRoomRepository  $gameRoomRepo,
+                                HubInterface        $hub)
     {
         $this->skullKingRepo = $skullKingRepo;
+        $this->gameRoomRepo = $gameRoomRepo;
+        $this->hub = $hub;
+
     }
 
 
@@ -29,19 +43,29 @@ class SkullKingController extends AbstractController
         $userId = new Uuid($request->cookies->get('userid'));
         $currentPlayer = $skull->findPlayer($userId);
         $gamePhase = $skull->getState();
+
         // Champ Annonce
         $announceValues = [];
         for ($i = 0; $i <= $skull->getNbRound(); $i++) {
             $announceValues[] = $i;
         }
         $fold = [];
-
+        $topicName = "game_topic_$id";
         return $this->render("game/index.html.twig", [
             'id' => $id,
             'announceValues' => $announceValues,
-            'cards' => $currentPlayer->getCards(),
+            'cards' => array_map(function (Card $card) {
+                return new CardDTO($card);
+            }, $currentPlayer->getCards()->toArray()),
             'gamePhase' => $gamePhase,
-            'fold' => $fold
+            'fold' => array_map(function (Card $card) {
+                return new CardDTO($card);
+            }, $fold),
+            'players' => array_map(function (Player $player) {
+                return new PlayerDTO($player);
+            }, $skull->getPlayers()->toArray()),
+            'topicName' => $topicName,
+            'currentUserId' => $userId
         ]);
     }
 
@@ -54,6 +78,14 @@ class SkullKingController extends AbstractController
         $skull->announce($userId, $announce);
 
         $this->skullKingRepo->save($skull, true);
+        $topicName = "game_topic_$id";
+        $this->hub->publish(new Update(
+            $topicName, json_encode([
+            'status' => 'player_announced',
+            'userId' => $userId,
+            'announce' => $announce,
+            'gamePhase' => $skull->getState()
+        ])));
 
         return $this->redirectToRoute('current_game', ['id' => $id,]);
     }

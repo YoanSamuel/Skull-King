@@ -9,33 +9,20 @@
         This friendly message is coming from: billy
 
     </div>
-    {% if gamePhase == 'ANNOUNCE' %}
-        {% for announce in announceValues %}
-            <form action="{{ path("announce_before_play_round", { id: id, announce: announce}) }}" method="POST">
-                <button type="submit"> {{ announce }}</button>
-            </form>
-        {% endfor %}
-    {% endif %}
 
 
-    {% for card in cards %}
-        <p>Votre main : {{ card.cardType }} </p>
-
-        <br>
-        <div>
-            {% if gamePhase == 'PLAYCARD' %}
-                <form action="{{ path("play_card", { id: id, card: card.cardType }) }}" method="POST">
-                    <button type="submit"> {{ card.cardType }}</button>
-                </form>
-            {% endif %}
-        </div>
-
-        <span> {{ gamePhase }}</span>
-    {% endfor %}
-
-    {% for fol in fold %}
-        <p>la pli : {{ fol }} </p>
-    {% endfor %}
+    <div {{ react_component('Game', {
+        'fold': fold,
+        'gamePhase': gamePhase ,
+        'cards': cards,
+        'gameId': id,
+        'players': players,
+        'announceValues' :  announceValues,
+        'eventSourceUrl': mercure(topicName, { subscribe: topicName }),
+        'currentUserId': currentUserId,
+    }) }}>
+        Loading... <i class="fas fa-cog fa-spin fa-3x"></i>
+    </div>
 
 
 

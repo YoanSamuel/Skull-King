@@ -46,7 +46,7 @@ class SkullKing
         $this->players = new ArrayCollection();
         foreach ($users as $user) {
 
-            $this->players->add(new Player($this, $user->getUserId(), new ArrayCollection([$deck->pop()]), null));
+            $this->players->add(new Player($this, $user, new ArrayCollection([$deck->pop()]), null));
 
         }
         $this->fold = new ArrayCollection();
@@ -122,7 +122,7 @@ class SkullKing
     {
         $player = $this->findPlayer($userId);
         $cards = $player->getCards();
-        
+
 
     }
 
