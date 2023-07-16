@@ -41,7 +41,7 @@
 
     <div class="row">
         <script>
-            const eventSource = new EventSource("{{ mercure(topicName)|escape('js') }}");
+            const eventSource = new EventSource("{{ mercure(topicName, { subscribe: topicName })|escape('js') }}");
             eventSource.onmessage = event => {
                 // Will be called every time an update is published by the server
                 console.log(JSON.parse(event.data));
