@@ -65,7 +65,9 @@ class SkullKingController extends AbstractController
                 return new PlayerDTO($player);
             }, $skull->getPlayers()->toArray()),
             'topicName' => $topicName,
-            'currentUserId' => $userId
+            'currentUserId' => $userId,
+            'version' => $skull->getVersion(),
+
         ]);
     }
 
@@ -77,17 +79,16 @@ class SkullKingController extends AbstractController
         $userId = new Uuid($request->cookies->get('userid'));
         $skull->announce($userId, $announce);
 
-        $this->skullKingRepo->save($skull, true);
+        $this->skullKingRepo->updateWithVersionning($id);
         $topicName = "game_topic_$id";
         $this->hub->publish(new Update(
             $topicName, json_encode([
             'status' => 'player_announced',
             'userId' => $userId,
             'announce' => $announce,
-            'gamePhase' => $skull->getState()
+            'gamePhase' => $skull->getState(),
         ])));
-
-        return $this->redirectToRoute('current_game', ['id' => $id,]);
+        return $this->redirectToRoute('current_game', ['id' => $id]);
     }
 
 

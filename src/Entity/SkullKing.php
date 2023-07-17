@@ -20,8 +20,8 @@ class SkullKing
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: 'integer')]
-    private $version;
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $version = null;
 
 
     private int $nbRound = 1;
