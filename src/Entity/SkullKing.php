@@ -20,6 +20,9 @@ class SkullKing
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column(type: 'integer')]
+    private $version;
+
 
     private int $nbRound = 1;
 
@@ -122,8 +125,6 @@ class SkullKing
     {
         $player = $this->findPlayer($userId);
         $cards = $player->getCards();
-
-
     }
 
     /**
@@ -166,6 +167,17 @@ class SkullKing
     public function setCreatedAt(\DateTimeImmutable $createdAt): void
     {
         $this->createdAt = $createdAt;
+    }
+
+    public function getVersion(): ?int
+    {
+        return $this->version;
+    }
+
+    public function setVersion($version): self
+    {
+        $this->version = $version;
+        return $this;
     }
 
 

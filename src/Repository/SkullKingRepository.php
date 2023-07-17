@@ -23,6 +23,13 @@ class SkullKingRepository extends ServiceEntityRepository
         }
     }
 
+    public function updateWithVersionning(SkullKing $entity, $id)
+    {
+        $skull = $this->getEntityManager()->find('SkullKing', $id);
+        $skull->setVersion(is_null($id) ? 1 : $skull->getVersion() + 1);
+        $this->save($skull, true);
+    }
+
     public function remove(SkullKing $entity, bool $flush = false): void
     {
         $this->getEntityManager()->remove($entity);
