@@ -56,6 +56,7 @@ class SkullKingRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
     public function findAllWithUsers(): array
     {
         return $this->createQueryBuilder('gr')->addSelect(['gru'])
