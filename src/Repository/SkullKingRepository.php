@@ -22,15 +22,11 @@ class SkullKingRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-
-
-    /**
-     * @throws \Doctrine\ORM\OptimisticLockException
-     * @throws \Doctrine\ORM\ORMException
-     */
-    public function updateWithVersionning(SkullKing $entity, ?int $version)
+    
+    public function updateWithVersionning(SkullKing $entity)
     {
-        $entity->setVersion(is_null($version) ? 1 : $entity->getVersion() + 1);
+        $entity->getVersion() + 1;
+
         $this->save($entity, true);
     }
 

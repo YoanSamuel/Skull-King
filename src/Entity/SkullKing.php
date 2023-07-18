@@ -20,9 +20,9 @@ class SkullKing
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
-    private ?int $version = null;
-
+    #[ORM\Version]
+    #[ORM\Column(type: 'integer', nullable: false)]
+    private int $version;
 
     private int $nbRound = 1;
 
@@ -54,6 +54,7 @@ class SkullKing
         }
         $this->fold = new ArrayCollection();
         $this->state = SkullKingPhase::ANNOUNCE->value;
+        $this->version = 1;
 
     }
 
@@ -72,7 +73,7 @@ class SkullKing
         $player->setAnnounce($announce);
 
         foreach ($this->players as $playerInGame) {
-            if ($playerInGame->getAnnounce() != null) {
+            if ($playerInGame->getAnnounce() !== null) {
                 $count++;
             }
         }

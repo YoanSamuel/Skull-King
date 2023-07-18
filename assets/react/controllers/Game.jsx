@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 
-export default function ({announceValues, gamePhase, cards, players, gameId, eventSourceUrl, currentUserId}) {
+export default function ({announceValues, gamePhase, cards, players, gameId, eventSourceUrl, currentUserId, error}) {
 
     const [playersState, setPlayersState] = useState(players);
     const [gamePhaseState, setGamePhaseState] = useState(gamePhase);
@@ -18,7 +18,7 @@ export default function ({announceValues, gamePhase, cards, players, gameId, eve
                         if (player.userId === data.userId) {
                             return {
                                 ...player,
-                                announce: data.announce
+                                announce: parseInt(data.announce),
                             }
                         }
 
@@ -29,6 +29,7 @@ export default function ({announceValues, gamePhase, cards, players, gameId, eve
             }
         }
     }, [])
+
 
     function displayPlayerAnnounce(player) {
         if (!player.announce && player.announce !== 0) {
@@ -47,7 +48,19 @@ export default function ({announceValues, gamePhase, cards, players, gameId, eve
         return 'A voté, en attente des autres joueurs.';
     }
 
+    function displayError(error) {
+        if (error === true) {
+
+            return ' Réessayes de proposer une annonce';
+        }
+
+    }
+
+    console.log(error)
+
     return <div>
+
+
         {
             playersState.map((player) => {
                 return <div key={player.id}>
@@ -59,7 +72,7 @@ export default function ({announceValues, gamePhase, cards, players, gameId, eve
         {
             (gamePhaseState === 'ANNOUNCE') && announceValues.map((announce) => {
                 return <form key={announce} action={`/game/${gameId}/announce/${announce}`} method="POST">
-                    <button type="submit">  {announce}</button>
+                    <button type="submit"> {announce} </button>
                 </form>
             })
 

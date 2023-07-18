@@ -6,9 +6,16 @@
     <div class="example-wrapper">
         <h1>Hello les pirates ✅</h1>
 
-        This friendly message is coming from: billy
 
     </div>
+    {% if version %}
+        <p>Version du skull en cours : {{ version }}</p>
+    {% endif %}
+
+    {% if error == true %}
+        <p> ERREUR MY FRIEND</p>
+    {% endif %}
+
 
 
     <div {{ react_component('Game', {
@@ -20,7 +27,11 @@
         'announceValues' :  announceValues,
         'eventSourceUrl': mercure(topicName, { subscribe: topicName }),
         'currentUserId': currentUserId,
+        'version': version,
+        'error': error
     }) }}>
+
+
         Loading... <i class="fas fa-cog fa-spin fa-3x"></i>
     </div>
 

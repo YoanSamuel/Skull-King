@@ -6,8 +6,11 @@ use App\Controller\dto\CardDTO;
 use App\Controller\dto\PlayerDTO;
 use App\Entity\Card;
 use App\Entity\Player;
-use App\Repository\GameRoomRepository;
 use App\Repository\SkullKingRepository;
+use Doctrine\DBAL\LockMode;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Exception\ORMException;
+use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -21,25 +24,26 @@ class SkullKingController extends AbstractController
 {
 
     private SkullKingRepository $skullKingRepo;
-    private GameRoomRepository $gameRoomRepo;
     private HubInterface $hub;
+    private EntityManagerInterface $em;
 
-
-    public function __construct(SkullKingRepository $skullKingRepo,
-                                GameRoomRepository  $gameRoomRepo,
-                                HubInterface        $hub)
+    public function __construct(SkullKingRepository    $skullKingRepo,
+                                HubInterface           $hub,
+                                EntityManagerInterface $em)
     {
         $this->skullKingRepo = $skullKingRepo;
-        $this->gameRoomRepo = $gameRoomRepo;
         $this->hub = $hub;
+        $this->em = $em;
 
     }
 
 
     #[Route('/game/{id}', name: 'current_game', methods: ["GET"])]
-    public function currentGame($id, Request $request): Response
+    public function currentGame($id, Request $request, $error = false): Response
     {
+
         $skull = $this->skullKingRepo->find($id);
+
         $userId = new Uuid($request->cookies->get('userid'));
         $currentPlayer = $skull->findPlayer($userId);
         $gamePhase = $skull->getState();
@@ -51,6 +55,7 @@ class SkullKingController extends AbstractController
         }
         $fold = [];
         $topicName = "game_topic_$id";
+
         return $this->render("game/index.html.twig", [
             'id' => $id,
             'announceValues' => $announceValues,
@@ -67,31 +72,55 @@ class SkullKingController extends AbstractController
             'topicName' => $topicName,
             'currentUserId' => $userId,
             'version' => $skull->getVersion(),
+            'error' => $error
 
         ]);
+
     }
 
 
+    /**
+     * @throws OptimisticLockException
+     * @throws \Doctrine\ORM\ORMException
+     */
     #[Route('/game/{id}/announce/{announce}', name: 'announce_before_play_round', methods: ["POST"])]
     public function announce($id, $announce, Request $request): Response
     {
-        $skull = $this->skullKingRepo->find($id);
-        $userId = new Uuid($request->cookies->get('userid'));
-        $skull->announce($userId, $announce);
 
-        $this->skullKingRepo->updateWithVersionning($id);
-        $topicName = "game_topic_$id";
-        $this->hub->publish(new Update(
-            $topicName, json_encode([
-            'status' => 'player_announced',
-            'userId' => $userId,
-            'announce' => $announce,
-            'gamePhase' => $skull->getState(),
-        ])));
-        return $this->redirectToRoute('current_game', ['id' => $id]);
+        $skull = $this->skullKingRepo->find($id);
+        try {
+            $this->em->lock($skull, LockMode::OPTIMISTIC, 789);
+
+            $userId = new Uuid($request->cookies->get('userid'));
+            $skull->announce($userId, $announce);
+
+            $this->skullKingRepo->updateWithVersionning($skull);
+            $topicName = "game_topic_$id";
+            $this->hub->publish(new Update(
+                $topicName, json_encode([
+                'status' => 'player_announced',
+                'userId' => $userId,
+                'announce' => $announce,
+                'gamePhase' => $skull->getState(),
+
+            ])));
+
+            return $this->redirectToRoute('current_game', ['id' => $id]);
+
+        } catch (OptimisticLockException $e) {
+
+            $error = true;
+            return $this->redirectToRoute('current_game', ['id' => $id, 'error' => $error]);
+        }
+
+
     }
 
 
+    /**
+     * @throws OptimisticLockException
+     * @throws ORMException
+     */
     #[Route('/game/{id}/play/{card}', name: 'play_card', methods: ["POST"])]
     public function playCard($id, $card, Request $request)
     {
@@ -99,7 +128,7 @@ class SkullKingController extends AbstractController
         $userId = new Uuid($request->cookies->get('userid'));
         $skull->playCard($userId, $card);
 
-        $this->skullKingRepo->save($skull, true);
+        $this->skullKingRepo->updateWithVersionning($skull);
         return $this->redirectToRoute('current_game', ['id' => $id]);
     }
 
