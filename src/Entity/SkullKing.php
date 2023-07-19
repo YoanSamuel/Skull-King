@@ -122,10 +122,23 @@ class SkullKing
         return $this->fold;
     }
 
-    public function playCard(Uuid $userId, string $card): void
+
+    public function addToFold(Uuid $userId, int $cardId, string $card)
     {
+        $count = 0;
         $player = $this->findPlayer($userId);
-        $cards = $player->getCards();
+        $player->playCard($this, $userId, $cardId, $card);
+
+        foreach ($this->players as $playerInGame) {
+            if ($playerInGame->playCard() === true) {
+                $count++;
+            }
+        }
+
+        if ($count == count($this->players) && empty($player->getCards())) {
+            $this->state = SkullKingPhase::RESOLVEFOLD->value;
+        }
+
     }
 
     /**

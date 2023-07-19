@@ -22,11 +22,9 @@ class SkullKingRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
-    
+
     public function updateWithVersionning(SkullKing $entity)
     {
-        $entity->getVersion() + 1;
-
         $this->save($entity, true);
     }
 

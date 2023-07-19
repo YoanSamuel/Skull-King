@@ -5,6 +5,7 @@ namespace App\Entity;
 
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Doctrine\DBAL\Exception;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -81,6 +82,19 @@ class Player
     {
         $this->announce = $announce;
         return $this;
+    }
+
+    public function playCard(SkullKing $skullKing, Uuid $userId, int $cardId, string $cardValue): bool
+    {
+        try {
+            $skullKing->setFold(new ArrayCollection([$userId, $cardId, $cardValue]));
+            return true;
+
+        } catch(Exception $e) {
+
+            return false;
+        }
+
     }
 
     public function getSkullKing(): ?SkullKing

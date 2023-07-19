@@ -89,7 +89,7 @@ class SkullKingController extends AbstractController
 
         $skull = $this->skullKingRepo->find($id);
         try {
-            $this->em->lock($skull, LockMode::OPTIMISTIC, 789);
+            $this->em->lock($skull, LockMode::OPTIMISTIC, $skull->getVersion());
 
             $userId = new Uuid($request->cookies->get('userid'));
             $skull->announce($userId, $announce);
@@ -109,8 +109,7 @@ class SkullKingController extends AbstractController
 
         } catch (OptimisticLockException $e) {
 
-            $error = true;
-            return $this->redirectToRoute('current_game', ['id' => $id, 'error' => $error]);
+            return $this->redirectToRoute('current_game', ['id' => $id, 'error' => true]);
         }
 
 
@@ -125,11 +124,17 @@ class SkullKingController extends AbstractController
     public function playCard($id, $card, Request $request)
     {
         $skull = $this->skullKingRepo->find($id);
-        $userId = new Uuid($request->cookies->get('userid'));
-        $skull->playCard($userId, $card);
+        try {
+            $userId = new Uuid($request->cookies->get('userid'));
+            $skull->addToFold($userId, $card);
 
-        $this->skullKingRepo->updateWithVersionning($skull);
-        return $this->redirectToRoute('current_game', ['id' => $id]);
+            $this->skullKingRepo->updateWithVersionning($skull);
+            return $this->redirectToRoute('current_game', ['id' => $id]);
+
+        } catch (OptimisticLockException $e) {
+
+            return $this->redirectToRoute('current_game', ['id' => $id, 'error' => true]);
+        }
     }
 
 
