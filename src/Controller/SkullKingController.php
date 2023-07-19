@@ -70,7 +70,7 @@ class SkullKingController extends AbstractController
                 return new PlayerDTO($player);
             }, $skull->getPlayers()->toArray()),
             'topicName' => $topicName,
-            'currentUserId' => $userId,
+            'playerId' => $userId,
             'version' => $skull->getVersion(),
             'error' => $error
 
@@ -120,31 +120,31 @@ class SkullKingController extends AbstractController
      * @throws OptimisticLockException
      * @throws ORMException
      */
-    #[Route('/game/{id}/play/{cardId}', name: 'play_card', methods: ["POST"])]
-    public function playCard($id, Card $card, Request $request): Response
+    #[Route('/game/{id}/play/{playerId}/{cardId}', name: 'play_card', methods: ["POST"])]
+    public function playCard($id, $card, $playerId, Request $request): Response
     {
         $skull = $this->skullKingRepo->find($id);
-        try {
-            $userId = new Uuid($request->cookies->get('userid'));
-            $skull->addToFold($userId, $card);
+        $userId = new Uuid($request->cookies->get('userid'));
+        $player = $skull->findPlayer($userId);
+        $playerId = $player->getId();
 
-            $this->skullKingRepo->updateWithVersionning($skull);
-            $topicName = "game_topic_$id";
-            $this->hub->publish(new Update(
-                $topicName, json_encode([
-                'status' => 'player_play_card',
-                'userId' => $userId,
-                'card' => $card->getCardType(),
-                'cardId' => $card->getId(),
-                'gamePhase' => $skull->getState(),
+        $skull->addToFold($userId, $card);
 
-            ])));
-            return $this->redirectToRoute('current_game', ['id' => $id]);
+        $this->skullKingRepo->updateWithVersionning($skull);
+        $topicName = "game_topic_$id";
+        $this->hub->publish(new Update(
+            $topicName, json_encode([
+            'status' => 'player_play_card',
+            'userId' => $userId,
+            'card' => $card->getCardType(),
+            'cardId' => $card->getId(),
+            'gamePhase' => $skull->getState(),
+            'playerId' => $playerId
 
-        } catch (OptimisticLockException $e) {
+        ])));
+        return $this->redirectToRoute('current_game', ['id' => $id]);
 
-            return $this->redirectToRoute('current_game', ['id' => $id, 'error' => true]);
-        }
+
     }
 
 

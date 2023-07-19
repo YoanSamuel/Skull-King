@@ -7,7 +7,7 @@ export default function ({
                              players,
                              gameId,
                              eventSourceUrl,
-                             currentUserId,
+                             playerId,
                              error,
                              fold
                          }) {
@@ -47,7 +47,7 @@ export default function ({
             return 'En attente...';
         }
 
-        if (player.userId === currentUserId) {
+        if (player.userId === playerId) {
             return player.announce;
         }
 

@@ -153,6 +153,8 @@ class SkullKing
 
     }
 
+    public function playCard()
+
     public function getPlayersSortedById(): array
     {
         $playersArray = $this->players->toArray();
