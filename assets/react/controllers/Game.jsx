@@ -1,6 +1,16 @@
 import React, {useEffect, useState} from 'react';
 
-export default function ({announceValues, gamePhase, cards, players, gameId, eventSourceUrl, currentUserId, error}) {
+export default function ({
+                             announceValues,
+                             gamePhase,
+                             cards,
+                             players,
+                             gameId,
+                             eventSourceUrl,
+                             currentUserId,
+                             error,
+                             fold
+                         }) {
 
     const [playersState, setPlayersState] = useState(players);
     const [gamePhaseState, setGamePhaseState] = useState(gamePhase);
