@@ -80,7 +80,7 @@ export default function ({announceValues, gamePhase, cards, players, gameId, eve
         <p> Votre main : </p>
         {cards.map((card) => {
             return (gamePhaseState === 'PLAYCARD') ?
-                <form key={card.id} action={`/game/${gameId}/play/${card}`} method="POST">
+                <form key={card.id} action={`/game/${gameId}/play/${card.id}`} method="POST">
                     <button type="submit"> {card.cardType}</button>
                 </form>
                 : <span key={card.id}>{card.id} {card.cardType}</span>

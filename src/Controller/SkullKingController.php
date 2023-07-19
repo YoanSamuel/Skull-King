@@ -120,8 +120,8 @@ class SkullKingController extends AbstractController
      * @throws OptimisticLockException
      * @throws ORMException
      */
-    #[Route('/game/{id}/play/{card}', name: 'play_card', methods: ["POST"])]
-    public function playCard($id, $card, Request $request)
+    #[Route('/game/{id}/play/{cardId}', name: 'play_card', methods: ["POST"])]
+    public function playCard($id, Card $card, Request $request): Response
     {
         $skull = $this->skullKingRepo->find($id);
         try {
@@ -129,6 +129,16 @@ class SkullKingController extends AbstractController
             $skull->addToFold($userId, $card);
 
             $this->skullKingRepo->updateWithVersionning($skull);
+            $topicName = "game_topic_$id";
+            $this->hub->publish(new Update(
+                $topicName, json_encode([
+                'status' => 'player_play_card',
+                'userId' => $userId,
+                'card' => $card->getCardType(),
+                'cardId' => $card->getId(),
+                'gamePhase' => $skull->getState(),
+
+            ])));
             return $this->redirectToRoute('current_game', ['id' => $id]);
 
         } catch (OptimisticLockException $e) {
