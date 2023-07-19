@@ -87,8 +87,6 @@ class Player
     {
 
         $this->cards->removeElement($card);
-        var_dump($this->cards->removeElement($card->getId()));
-
     }
 
     public function getSkullKing(): ?SkullKing

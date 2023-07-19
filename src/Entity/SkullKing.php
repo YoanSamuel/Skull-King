@@ -122,23 +122,47 @@ class SkullKing
         return $this->fold;
     }
 
+    /**
+     * @throws Exception
+     */
     public function addToFold(Uuid $userId, Card $card): void
     {
         $count = 0;
+        $arrayPlayersSorted = $this->getPlayersSortedById();
+        $firstPlayer = $arrayPlayersSorted[0];
         $player = $this->findPlayer($userId);
+
+
+        if ($player->getId() !== $firstPlayer->getId()) {
+            throw new \Exception('Ce n\'est pas à toi de jouer, ' . $player->getName() . '!');
+        }
+
         $this->fold->add($card);
         $player->playCard($card);
 
-        foreach ($this->players as $playerInGame) {
 
+        foreach ($this->players as $playerInGame) {
             if (!$playerInGame->getCards()->contains($card)) {
                 $count++;
             }
         }
-        
+
         if ($count == count($this->players)) {
             $this->state = SkullKingPhase::RESOLVEFOLD->value;
         }
+
+    }
+
+    public function getPlayersSortedById(): array
+    {
+        $playersArray = $this->players->toArray();
+
+        // Tri du tableau de joueurs par ID
+        usort($playersArray, function (Player $player1, Player $player2) {
+            return $player1->getId() <=> $player2->getId();
+        });
+
+        return $playersArray;
     }
 
     /**
