@@ -129,7 +129,6 @@ class SkullKingController extends AbstractController
         $card = $this->cardRepo->find($cardId);
         try {
             $userId = new Uuid($request->cookies->get('userid'));
-            $player = $skull->findPlayer($userId);
             $skull->addToFold($userId, $card);
             $fold = $skull->getFold();
             $this->skullKingRepo->updateWithVersionning($skull);
@@ -145,7 +144,7 @@ class SkullKingController extends AbstractController
             return $this->json([
                 'status' => 'player_play_card',
                 'userId' => $userId,
-                'fold' => $fold,
+                'fold' => $skull->getFold(),
                 'gamePhase' => $skull->getState(),
             ]);
 

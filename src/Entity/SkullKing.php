@@ -136,9 +136,12 @@ class SkullKing
         if ($player->getId() !== $firstPlayer->getId()) {
             throw new \Exception('Ce n\'est pas à toi de jouer, ' . $player->getName() . '!');
         }
+        $card->setPlayer(null);
+        $card->setSkullKing($this);
 
         $this->fold->add($card);
         $player->playCard($card);
+
 
         return $this->fold->toArray();
 

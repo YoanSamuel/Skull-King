@@ -29,6 +29,7 @@ class Card
     #[ORM\JoinColumn(nullable: false)]
     private ?Player $player = null;
 
+
     #[ORM\ManyToOne(inversedBy: 'fold')]
     #[ORM\JoinColumn(nullable: true)]
     private ?SkullKing $skullKing = null;
@@ -163,10 +164,18 @@ class Card
     /**
      * @param Player $player
      */
-    public function setPlayer(Player $player): Card
+    public function setPlayer(?Player $player): Card
     {
         $this->player = $player;
         return $this;
+    }
+
+    /**
+     * @param SkullKing|null $skullKing
+     */
+    public function setSkullKing(?SkullKing $skullKing): void
+    {
+        $this->skullKing = $skullKing;
     }
 
 
