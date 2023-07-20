@@ -125,7 +125,7 @@ class SkullKing
     /**
      * @throws Exception
      */
-    public function addToFold(Uuid $userId, Card $card): void
+    public function addToFold(Uuid $userId, Card $card): array
     {
         $count = 0;
         $arrayPlayersSorted = $this->getPlayersSortedById();
@@ -140,20 +140,24 @@ class SkullKing
         $this->fold->add($card);
         $player->playCard($card);
 
+        return $this->fold->toArray();
 
-        foreach ($this->players as $playerInGame) {
-            if (!$playerInGame->getCards()->contains($card)) {
-                $count++;
-            }
-        }
-
-        if ($count == count($this->players)) {
-            $this->state = SkullKingPhase::RESOLVEFOLD->value;
-        }
+//        foreach ($this->players as $playerInGame) {
+//            if (!$playerInGame->getCards()->contains($card)) {
+//                $count++;
+//            }
+//        }
+//
+//        if ($count == count($this->players)) {
+//            $this->state = SkullKingPhase::RESOLVEFOLD->value;
+//        }
 
     }
 
     public function playCard()
+    {
+
+    }
 
     public function getPlayersSortedById(): array
     {

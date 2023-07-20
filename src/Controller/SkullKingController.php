@@ -6,6 +6,7 @@ use App\Controller\dto\CardDTO;
 use App\Controller\dto\PlayerDTO;
 use App\Entity\Card;
 use App\Entity\Player;
+use App\Repository\CardRepository;
 use App\Repository\SkullKingRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
@@ -26,15 +27,17 @@ class SkullKingController extends AbstractController
     private SkullKingRepository $skullKingRepo;
     private HubInterface $hub;
     private EntityManagerInterface $em;
+    private CardRepository $cardRepo;
 
     public function __construct(SkullKingRepository    $skullKingRepo,
                                 HubInterface           $hub,
-                                EntityManagerInterface $em)
+                                EntityManagerInterface $em,
+                                CardRepository         $cardRepo)
     {
         $this->skullKingRepo = $skullKingRepo;
         $this->hub = $hub;
         $this->em = $em;
-
+        $this->cardRepo = $cardRepo;
     }
 
 
@@ -78,7 +81,6 @@ class SkullKingController extends AbstractController
 
     }
 
-
     /**
      * @throws OptimisticLockException
      * @throws \Doctrine\ORM\ORMException
@@ -120,32 +122,39 @@ class SkullKingController extends AbstractController
      * @throws OptimisticLockException
      * @throws ORMException
      */
-    #[Route('/game/{id}/play/{playerId}/{cardId}', name: 'play_card', methods: ["POST"])]
-    public function playCard($id, $card, $playerId, Request $request): Response
+    #[Route('/game/{id}/player/{playerId}/playcard/{cardId}', name: 'play_card', methods: ["POST"])]
+    public function playCard($id, $cardId, $playerId, Request $request): Response
     {
         $skull = $this->skullKingRepo->find($id);
-        $userId = new Uuid($request->cookies->get('userid'));
-        $player = $skull->findPlayer($userId);
-        $playerId = $player->getId();
+        $card = $this->cardRepo->find($cardId);
+        try {
+            $userId = new Uuid($request->cookies->get('userid'));
+            $player = $skull->findPlayer($userId);
+            $skull->addToFold($userId, $card);
+            $fold = $skull->getFold();
+            $this->skullKingRepo->updateWithVersionning($skull);
+            $topicName = "game_topic_$id";
+//            $this->hub->publish(new Update(
+//                $topicName, json_encode([
+//                'status' => 'player_announced',
+//                'userId' => $userId,
+//                'fold' => $fold,
+//                'gamePhase' => $skull->getState(),
+//
+//            ])));
+            return $this->json([
+                'status' => 'player_play_card',
+                'userId' => $userId,
+                'fold' => $fold,
+                'gamePhase' => $skull->getState(),
+            ]);
 
-        $skull->addToFold($userId, $card);
+        } catch (OptimisticLockException $e) {
 
-        $this->skullKingRepo->updateWithVersionning($skull);
-        $topicName = "game_topic_$id";
-        $this->hub->publish(new Update(
-            $topicName, json_encode([
-            'status' => 'player_play_card',
-            'userId' => $userId,
-            'card' => $card->getCardType(),
-            'cardId' => $card->getId(),
-            'gamePhase' => $skull->getState(),
-            'playerId' => $playerId
+            return $this->redirectToRoute('current_game', ['id' => $id, 'error' => true]);
+        }
 
-        ])));
-        return $this->redirectToRoute('current_game', ['id' => $id]);
-
+        return $this->redirectToRoute('current_game', ['id' => $id, 'error' => true]);
 
     }
-
-
 }

@@ -37,6 +37,23 @@ export default function ({
                 })
                 setGamePhaseState(data.gamePhase)
             }
+
+            if (data.status === 'player_play_card') {
+                setPlayersState((actualPlayers) => {
+                    console.log(actualPlayers)
+                    return actualPlayers.map((player) => {
+                        if (player.userId === data.userId) {
+                            return {
+                                ...player,
+                                announce: parseInt(data.announce),
+                            }
+                        }
+
+                        return player;
+                    })
+                })
+                setGamePhaseState(data.gamePhase)
+            }
         }
     }, [])
 
@@ -90,7 +107,7 @@ export default function ({
         <p> Votre main : </p>
         {cards.map((card) => {
             return (gamePhaseState === 'PLAYCARD') ?
-                <form key={card.id} action={`/game/${gameId}/play/${card.id}`} method="POST">
+                <form key={card.id} action={`/game/${gameId}/player/${playerId}/playcard/${card.id}`} method="POST">
                     <button type="submit"> {card.cardType}</button>
                 </form>
                 : <span key={card.id}>{card.id} {card.cardType}</span>
