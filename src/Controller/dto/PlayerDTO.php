@@ -22,4 +22,5 @@ class PlayerDTO
         $this->userId = $player->getUserId();
         $this->announce = $player->getAnnounce();
     }
+
 }

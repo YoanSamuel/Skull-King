@@ -8,12 +8,12 @@ export default function ({
                              gameId,
                              eventSourceUrl,
                              playerId,
-                             error,
-                             fold
+                             skull
                          }) {
 
     const [playersState, setPlayersState] = useState(players);
     const [gamePhaseState, setGamePhaseState] = useState(gamePhase);
+    const [skullState, setSkullState] = useState(skull);
 
     useEffect(() => {
         const eventSource = new EventSource(eventSourceUrl);
@@ -39,20 +39,19 @@ export default function ({
             }
 
             if (data.status === 'player_play_card') {
-                setPlayersState((actualPlayers) => {
-                    console.log(actualPlayers)
-                    return actualPlayers.map((player) => {
-                        if (player.userId === data.userId) {
+                setSkullState((actualSkull) => {
+                    return actualSkull.map((skull) => {
+                        if (skull.id === data.id) {
                             return {
-                                ...player,
-                                announce: parseInt(data.announce),
+                                ...cards,
+                                fold: data.fold
                             }
                         }
+                        return skull;
 
-                        return player;
                     })
                 })
-                setGamePhaseState(data.gamePhase)
+                setSkullState(data.gamePhase)
             }
         }
     }, [])
@@ -75,19 +74,10 @@ export default function ({
         return 'A voté, en attente des autres joueurs.';
     }
 
-    function displayError(error) {
-        if (error === true) {
-
-            return ' Réessayes de proposer une annonce';
-        }
-
-    }
-
-    console.log(error)
 
     return <div>
-
-
+        {console.log(skull[0].fold[0])}
+        {console.log(skull[0].id)}
         {
             playersState.map((player) => {
                 return <div key={player.id}>
@@ -113,6 +103,10 @@ export default function ({
                 : <span key={card.id}>{card.id} {card.cardType}</span>
         })
         }
+
+        <h2>LA FOLD DE SES MORTS </h2>
+
+
     </div>
 
 }

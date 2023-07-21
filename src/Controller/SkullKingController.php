@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Controller\dto\CardDTO;
 use App\Controller\dto\PlayerDTO;
+use App\Controller\dto\SkullDTO;
 use App\Entity\Card;
 use App\Entity\Player;
+use App\Entity\SkullKing;
 use App\Repository\CardRepository;
 use App\Repository\SkullKingRepository;
 use Doctrine\DBAL\LockMode;
@@ -42,7 +44,7 @@ class SkullKingController extends AbstractController
 
 
     #[Route('/game/{id}', name: 'current_game', methods: ["GET"])]
-    public function currentGame($id, Request $request, $error = false): Response
+    public function currentGame($id, Request $request): Response
     {
 
         $skull = $this->skullKingRepo->find($id);
@@ -72,10 +74,12 @@ class SkullKingController extends AbstractController
             'players' => array_map(function (Player $player) {
                 return new PlayerDTO($player);
             }, $skull->getPlayers()->toArray()),
+            'skull' => array_map(function (SkullKing $skullKing) {
+                return new SkullDTO($skullKing);
+            }, [$currentPlayer->getSkullKing()]),
             'topicName' => $topicName,
             'playerId' => $userId,
             'version' => $skull->getVersion(),
-            'error' => $error
 
         ]);
 
@@ -133,27 +137,22 @@ class SkullKingController extends AbstractController
             $fold = $skull->getFold();
             $this->skullKingRepo->updateWithVersionning($skull);
             $topicName = "game_topic_$id";
-//            $this->hub->publish(new Update(
-//                $topicName, json_encode([
-//                'status' => 'player_announced',
-//                'userId' => $userId,
-//                'fold' => $fold,
-//                'gamePhase' => $skull->getState(),
-//
-//            ])));
-            return $this->json([
+            $this->hub->publish(new Update(
+                $topicName, json_encode([
                 'status' => 'player_play_card',
                 'userId' => $userId,
-                'fold' => $skull->getFold(),
+                'fold' => $fold->toArray(),
                 'gamePhase' => $skull->getState(),
-            ]);
+
+            ])));
+
+            return $this->redirectToRoute('current_game', ['id' => $id]);
 
         } catch (OptimisticLockException $e) {
 
-            return $this->redirectToRoute('current_game', ['id' => $id, 'error' => true]);
+            return $this->redirectToRoute('current_game', ['id' => $id]);
         }
 
-        return $this->redirectToRoute('current_game', ['id' => $id, 'error' => true]);
 
     }
 }

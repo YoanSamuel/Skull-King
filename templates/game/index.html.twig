@@ -12,14 +12,6 @@
         <p>Version du skull en cours : {{ version }}</p>
     {% endif %}
 
-    {% for fol in fold %}
-        <h2>{{ fol }}</h2>
-    {% endfor %}
-
-    {% if error == true %}
-        <p> ERREUR MY FRIEND</p>
-    {% endif %}
-
 
 
     <div {{ react_component('Game', {
@@ -32,8 +24,7 @@
         'eventSourceUrl': mercure(topicName, { subscribe: topicName }),
         'playerId': playerId,
         'version': version,
-        'error': error,
-        'fold': fold,
+        'skull': skull,
     }) }}>
 
 

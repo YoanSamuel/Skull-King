@@ -83,11 +83,6 @@ class Player
         return $this;
     }
 
-    public function playCard(Card $card)
-    {
-
-        $this->cards->removeElement($card);
-    }
 
     public function getSkullKing(): ?SkullKing
     {

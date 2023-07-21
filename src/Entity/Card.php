@@ -11,7 +11,7 @@ class Card
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?int $id;
 
     #[ORM\Column]
     private string $cardType;
@@ -26,7 +26,7 @@ class Card
     private ?string $value;
 
     #[ORM\ManyToOne(inversedBy: 'cards')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Player $player = null;
 
 
@@ -162,7 +162,8 @@ class Card
     }
 
     /**
-     * @param Player $player
+     * @param Player|null $player
+     * @return Card
      */
     public function setPlayer(?Player $player): Card
     {
@@ -178,5 +179,20 @@ class Card
         $this->skullKing = $skullKing;
     }
 
+    /**
+     * @return SkullKing|null
+     */
+    public function getSkullKing(): ?SkullKing
+    {
+        return $this->skullKing;
+    }
+
+    /**
+     * @return Player|null
+     */
+    public function getPlayer(): ?Player
+    {
+        return $this->player;
+    }
 
 }
