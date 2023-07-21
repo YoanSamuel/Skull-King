@@ -36,22 +36,12 @@ export default function ({
                     })
                 })
                 setGamePhaseState(data.gamePhase)
+
             }
 
             if (data.status === 'player_play_card') {
-                setSkullState((actualSkull) => {
-                    return actualSkull.map((skull) => {
-                        if (skull.id === data.id) {
-                            return {
-                                ...cards,
-                                fold: data.fold
-                            }
-                        }
-                        return skull;
+                setSkullState(data.skull)
 
-                    })
-                })
-                setSkullState(data.gamePhase)
             }
         }
     }, [])

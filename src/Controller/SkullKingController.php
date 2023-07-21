@@ -70,13 +70,13 @@ class SkullKingController extends AbstractController
             'gamePhase' => $gamePhase,
             'fold' => array_map(function (Card $card) {
                 return new CardDTO($card);
-            }, $fold),
+            }, $skull->getFold()->toArray()),
             'players' => array_map(function (Player $player) {
                 return new PlayerDTO($player);
             }, $skull->getPlayers()->toArray()),
             'skull' => array_map(function (SkullKing $skullKing) {
                 return new SkullDTO($skullKing);
-            }, [$currentPlayer->getSkullKing()]),
+            }, [$skull]),
             'topicName' => $topicName,
             'playerId' => $userId,
             'version' => $skull->getVersion(),
@@ -142,6 +142,7 @@ class SkullKingController extends AbstractController
                 'status' => 'player_play_card',
                 'userId' => $userId,
                 'fold' => $fold->toArray(),
+                'players' => $skull->getPlayers()->toArray(),
                 'gamePhase' => $skull->getState(),
 
             ])));
