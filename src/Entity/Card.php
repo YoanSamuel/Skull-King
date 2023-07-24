@@ -195,4 +195,11 @@ class Card
         return $this->player;
     }
 
+    public function getPower(): int
+    {
+        $cardType = $this->getCardType();
+
+        return CARD_POWER_ORDER[$cardType];
+    }
+
 }

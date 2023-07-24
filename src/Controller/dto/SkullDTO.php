@@ -16,21 +16,10 @@ class SkullDTO
     {
         $this->id = $skullKing->getId();
         $this->fold = $skullKing->getFold()->map(function (Card $card) {
-            return [
-                'id' => $card->getId(),
-                'cardType' => $card->getCardType(),
-                'value' => $card->getValue(),
-                'color' => $card->getColor(),
-                'pirateName' => $card->getPirateName(),
-
-            ];
+            return new CardDTO($card);
         })->toArray();
         $this->players = $skullKing->getPlayers()->map(function (Player $player) {
-            return [
-                'id' => $player->getId(),
-                'name' => $player->getName(),
-
-            ];
+            return new PlayerDTO($player);
         })->toArray();
     }
 }

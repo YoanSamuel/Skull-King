@@ -66,8 +66,7 @@ export default function ({
 
 
     return <div>
-        {console.log(skull[0].fold[0])}
-        {console.log(skull[0].id)}
+
         {
             playersState.map((player) => {
                 return <div key={player.id}>
@@ -95,6 +94,13 @@ export default function ({
         }
 
         <h2>LA FOLD DE SES MORTS </h2>
+        {/*<  <ul>*/}
+        {/*      {skullState[0].fold.map((card) => (*/}
+        {/*          <li key={card.id}>*/}
+        {/*              {card.cardType}*/}
+        {/*          </li>*/}
+        {/*      ))}*/}
+        {/*  </ul>>*/}
 
 
     </div>

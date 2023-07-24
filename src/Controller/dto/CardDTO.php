@@ -3,21 +3,27 @@
 namespace App\Controller\dto;
 
 use App\Entity\Card;
-use App\Entity\Player;
-use App\Entity\SkullKing;
 
 class CardDTO
 {
     public string $cardType;
-    public string $id;
-    public ?Player $player;
-    public ?SkullKing $skull;
+    public int $id;
+    public int $playerId;
+    public ?string $color;
+    public ?string $pirateName;
+    public ?string $value;
+    public ?int $skullKingId;
 
     public function __construct(Card $card)
     {
         $this->cardType = $card->getCardType();
         $this->id = $card->getId();
-        $this->player = $card->getPlayer();
-        $this->skull = $card->getSkullKing();
+        $this->playerId = $card->getPlayer()->getId();
+        $this->color = $card->getColor();
+        $this->pirateName = $card->getPirateName();
+        $this->value = $card->getValue();
+        $this->skullKingId = $card->getSkullKing()?->getId();
     }
+
+
 }

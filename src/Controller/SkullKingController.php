@@ -10,10 +10,10 @@ use App\Entity\Player;
 use App\Entity\SkullKing;
 use App\Repository\CardRepository;
 use App\Repository\SkullKingRepository;
-use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,16 +30,19 @@ class SkullKingController extends AbstractController
     private HubInterface $hub;
     private EntityManagerInterface $em;
     private CardRepository $cardRepo;
+    private LoggerInterface $logger;
 
     public function __construct(SkullKingRepository    $skullKingRepo,
                                 HubInterface           $hub,
                                 EntityManagerInterface $em,
-                                CardRepository         $cardRepo)
+                                CardRepository         $cardRepo,
+                                LoggerInterface        $logger)
     {
         $this->skullKingRepo = $skullKingRepo;
         $this->hub = $hub;
         $this->em = $em;
         $this->cardRepo = $cardRepo;
+        $this->logger = $logger;
     }
 
 
@@ -64,9 +67,11 @@ class SkullKingController extends AbstractController
         return $this->render("game/index.html.twig", [
             'id' => $id,
             'announceValues' => $announceValues,
-            'cards' => array_map(function (Card $card) {
+            'cards' => $currentPlayer->getCards()->map(function (Card $card) {
                 return new CardDTO($card);
-            }, $currentPlayer->getCards()->toArray()),
+            })->filter(function (CardDTO $card) {
+                return is_null($card->skullKingId);
+            })->toArray(),
             'gamePhase' => $gamePhase,
             'fold' => array_map(function (Card $card) {
                 return new CardDTO($card);
@@ -95,12 +100,11 @@ class SkullKingController extends AbstractController
 
         $skull = $this->skullKingRepo->find($id);
         try {
-            $this->em->lock($skull, LockMode::OPTIMISTIC, $skull->getVersion());
 
             $userId = new Uuid($request->cookies->get('userid'));
             $skull->announce($userId, $announce);
 
-            $this->skullKingRepo->updateWithVersionning($skull);
+            $this->skullKingRepo->save($skull, true);
             $topicName = "game_topic_$id";
             $this->hub->publish(new Update(
                 $topicName, json_encode([
@@ -135,7 +139,7 @@ class SkullKingController extends AbstractController
             $userId = new Uuid($request->cookies->get('userid'));
             $skull->addToFold($userId, $card);
             $fold = $skull->getFold();
-            $this->skullKingRepo->updateWithVersionning($skull);
+            $this->skullKingRepo->save($skull, true);
             $topicName = "game_topic_$id";
             $this->hub->publish(new Update(
                 $topicName, json_encode([

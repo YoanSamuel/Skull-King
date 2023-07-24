@@ -26,6 +26,13 @@ class SkullKing
 
     private int $nbRound = 1;
 
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $currentPlayerId;
+
+    #[ORM\Column(type: 'string', nullable: true)]
+    private ?string $colorAsked;
+
+
     #[ORM\Column(nullable: false)]
     private string $state;
 
@@ -54,7 +61,7 @@ class SkullKing
         }
         $this->fold = new ArrayCollection();
         $this->state = SkullKingPhase::ANNOUNCE->value;
-        $this->version = 1;
+
 
     }
 
@@ -80,6 +87,8 @@ class SkullKing
 
         if ($count == count($this->players)) {
             $this->state = SkullKingPhase::PLAYCARD->value;
+            $sortedPlayers = $this->getPlayersSortedById();
+            $this->currentPlayerId = $sortedPlayers[0]->getId();
         }
     }
 
@@ -125,46 +134,86 @@ class SkullKing
     /**
      * @throws Exception
      */
-    public function addToFold(Uuid $userId, Card $card): array
+    public function playCard(Uuid $userId, Card $card): array
     {
-        $count = 0;
-        $arrayPlayersSorted = $this->getPlayersSortedById();
-        $firstPlayer = $arrayPlayersSorted[0];
+
         $player = $this->findPlayer($userId);
 
 
-//        if ($player->getId() !== $firstPlayer->getId()) {
-//            throw new \Exception('Ce n\'est pas à toi de jouer, ' . $player->getName() . '!');
-//        }
+        if (is_null($player)) {
+            throw new \Exception('Ce joueur nexiste pas Billy!');
+        }
 
-        $card->setPlayer(null);
+        $playerHasAlReadyPlayed = !is_null($this->getCardInFoldFor($player));
+        if ($playerHasAlReadyPlayed) {
+            throw new \Exception('Tu ne peux pas jouer deux fois dans le même tour!');
+        }
+
+        if ($player->getId() !== $this->currentPlayerId) {
+            throw new \Exception('Ce n\'est pas à toi de jouer, ' . $player->getName() . '!');
+        }
+
+        if (!$player->getCards()->contains($card)) {
+            throw new \Exception('Tu ne peux pas jouer une carte que tu ne possèdes pas , ' . $player->getName() . '!');
+        }
+
+        $isCardPlayedColored = $card->getCardType() == CardType::COLORED->value;
+        $isColorAsked = !is_null($this->colorAsked);
+        $isCardPlayedSameColor = $card->getColor() == $this->colorAsked;
+        $hasTheColorAsked = $player->getCards()->findFirst(function (int $key, Card $card) {
+            return $card->getColor() == $this->colorAsked;
+        });
+
+        if ($isColorAsked && $isCardPlayedColored && !$isCardPlayedSameColor && !$hasTheColorAsked) {
+            throw new \Exception('Tu TRICHEEEEEEEEEEEEEEEEEEEEES ' . $player->getName() . '!');
+        }
+
         $card->setSkullKing($this);
-
-
         $this->fold->add($card);
+
+        $cardsPlayedCount = $this->fold->count();
+        $allPlayersPlayed = $cardsPlayedCount === count($this->players);
+
+        if ($allPlayersPlayed) {
+            $winner = $this->resolveFold($this->fold);
+            $this->players = $this->players->map(function (Player $player) {
+                $player->removeCardPlayed($this->fold);
+                return $player;
+            });
+        }
 
 
         return $this->fold->toArray();
 
-//        foreach ($this->players as $playerInGame) {
-//            if (!$playerInGame->getCards()->contains($card)) {
-//                $count++;
-//            }
-//        }
-//
-//        if ($count == count($this->players)) {
-//            $this->state = SkullKingPhase::RESOLVEFOLD->value;
-//        }
-
     }
 
-    public function playCard()
+    public function getCardInFoldFor(Player $player): ?Card
     {
+        return $this->fold->findFirst(function (int $key, Card $card) use ($player) {
+            return $card->getPlayer()->getId() == $player->getId();
+        });
+    }
 
+    public function resolveFold(Collection $fold): Player
+    {
+        $winningCard = null;
+        $winningPlayer = null;
+
+
+        foreach ($fold as $card) {
+
+            if (!$winningCard || $card->getPower() > $winningCard->getPower()) {
+                $winningCard = $card;
+                $winningPlayer = $card->getPlayer();
+            }
+        }
+
+        return $this->players[0];
     }
 
     public function getPlayersSortedById(): array
     {
+
         $playersArray = $this->players->toArray();
 
         // Tri du tableau de joueurs par ID
@@ -226,6 +275,16 @@ class SkullKing
     {
         $this->version = $version;
         return $this;
+    }
+
+    public function getCurrentPlayerId(): int
+    {
+        return $this->currentPlayerId;
+    }
+
+    public function setCurrentPlayerId(int $currentPlayerId): void
+    {
+        $this->currentPlayerId = $currentPlayerId;
     }
 
 

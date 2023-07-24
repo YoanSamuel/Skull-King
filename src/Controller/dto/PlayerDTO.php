@@ -9,7 +9,6 @@ use Symfony\Component\Uid\Uuid;
 class PlayerDTO
 {
 
-
     public string $id;
     public Uuid $userId;
     public string $name;
