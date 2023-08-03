@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+
 class Deck
 {
 
@@ -52,6 +54,15 @@ class Deck
     public function pop()
     {
         return array_pop($this->cards);
+    }
+
+    public function distribute(int $nbCards): ArrayCollection
+    {
+        $cards = new ArrayCollection();
+        for ($i = 0; $i < $nbCards; ++$i) {
+            $cards->add($this->pop());
+        }
+        return $cards;
     }
 
 

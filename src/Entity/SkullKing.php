@@ -56,7 +56,7 @@ class SkullKing
         $this->players = new ArrayCollection();
         foreach ($users as $user) {
 
-            $this->players->add(new Player($this, $user, new ArrayCollection([$deck->pop()]), null));
+            $this->players->add(new Player($this, $user, $deck->distribute($this->nbRound), null));
 
         }
         $this->fold = new ArrayCollection();
@@ -171,15 +171,30 @@ class SkullKing
         $card->setSkullKing($this);
         $this->fold->add($card);
 
+        $this->currentPlayerId = $this->nextPlayerId();
+
         $cardsPlayedCount = $this->fold->count();
         $allPlayersPlayed = $cardsPlayedCount === count($this->players);
 
+
         if ($allPlayersPlayed) {
+
             $winner = $this->resolveFold($this->fold);
+
             $this->players = $this->players->map(function (Player $player) {
                 $player->removeCardPlayed($this->fold);
                 return $player;
             });
+            $this->fold->clear();
+
+            $everyPlayersHasEmptyHand = $this->players->forAll(function (int $key, Player $player) {
+                return $player->getCards()->count() == 0;
+            });
+
+            if ($everyPlayersHasEmptyHand) {
+                $this->prepareNextRound();
+            }
+
         }
 
 
@@ -198,15 +213,6 @@ class SkullKing
     {
         $winningCard = null;
         $winningPlayer = null;
-
-
-        foreach ($fold as $card) {
-
-            if (!$winningCard || $card->getPower() > $winningCard->getPower()) {
-                $winningCard = $card;
-                $winningPlayer = $card->getPlayer();
-            }
-        }
 
         return $this->players[0];
     }
@@ -232,15 +238,6 @@ class SkullKing
         $this->fold = $fold;
     }
 
-    public function isGamePhase(): void
-    {
-        $this->state = SkullKingPhase::PLAYCARD->value;
-    }
-
-    public function isAnnouncePhase(): void
-    {
-        $this->state = SkullKingPhase::ANNOUNCE->value;
-    }
 
     /**
      * @return string
@@ -285,6 +282,44 @@ class SkullKing
     public function setCurrentPlayerId(int $currentPlayerId): void
     {
         $this->currentPlayerId = $currentPlayerId;
+    }
+
+    private function prepareNextRound()
+    {
+        //set score in players
+        // creer fonction resolve_score
+
+        $this->nbRound += 1;
+        $this->state = SkullKingPhase::ANNOUNCE->value;
+
+        $deck = new Deck();
+        foreach ($this->players as $player) {
+            $player->setAnnounce(null);
+            $player->setCards($deck->distribute($this->nbRound));
+
+        }
+
+    }
+
+    private function nextPlayerId(): int
+    {
+        $nextPlayerIdIndex = null;
+        $currentPlayerIdIndex = null;
+        $sortedPlayers = $this->getPlayersSortedById();
+        foreach ($sortedPlayers as $index => $player) {
+            if ($player->getId() == $this->currentPlayerId) {
+                $currentPlayerIdIndex = $index;
+            }
+        }
+
+        $maxIndex = count($sortedPlayers) - 1;
+        if ($currentPlayerIdIndex == $maxIndex) {
+            $nextPlayerIdIndex = 0;
+        } else {
+            $nextPlayerIdIndex = $currentPlayerIdIndex + 1;
+        }
+
+        return $sortedPlayers[$nextPlayerIdIndex]->getId();
     }
 
 

@@ -25,7 +25,7 @@ class Card
     #[ORM\Column(nullable: true)]
     private ?string $value;
 
-    #[ORM\ManyToOne(inversedBy: 'cards')]
+    #[ORM\ManyToOne(cascade: [], inversedBy: 'cards')]
     #[ORM\JoinColumn(nullable: true)]
     private ?Player $player = null;
 

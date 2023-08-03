@@ -137,7 +137,7 @@ class SkullKingController extends AbstractController
         $card = $this->cardRepo->find($cardId);
         try {
             $userId = new Uuid($request->cookies->get('userid'));
-            $skull->addToFold($userId, $card);
+            $skull->playCard($userId, $card);
             $fold = $skull->getFold();
             $this->skullKingRepo->save($skull, true);
             $topicName = "game_topic_$id";

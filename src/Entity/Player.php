@@ -24,7 +24,7 @@ class Player
     #[ORM\Column]
     private string $name;
 
-    #[ORM\OneToMany(mappedBy: 'player', targetEntity: Card::class, cascade: ['persist', 'remove'], fetch: 'EAGER', orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'player', targetEntity: Card::class, cascade: ['persist'], fetch: 'EAGER')]
     private Collection $cards;
 
     #[ORM\Column(nullable: true)]
@@ -98,9 +98,18 @@ class Player
 
     public function removeCardPlayed(ArrayCollection|Collection $fold): void
     {
-        $fold->findFirst(function (int $key, Card $card) {
+
+        $cardPlayed = $fold->findFirst(function (int $key, Card $card) {
+            if ($card->getPlayer() == null) {
+                return false;
+            }
             return $card->getPlayer()->getId() == $this->getId();
         });
+        $this->cards = $this->cards->filter(function (Card $card) use ($cardPlayed) {
+            return $card->getId() != $cardPlayed->getId();
+        });
+
+//        $cardPlayed->setPlayer(null);
     }
 
 }
