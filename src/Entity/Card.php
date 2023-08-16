@@ -5,45 +5,30 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 
-#[ORM\Entity]
+
 class Card
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id;
 
-    #[ORM\Column]
     private string $cardType;
 
-    #[ORM\Column(nullable: true)]
     private ?string $pirateName;
 
-    #[ORM\Column(nullable: true)]
     private ?string $color;
 
-    #[ORM\Column(nullable: true)]
     private ?string $value;
 
-    #[ORM\ManyToOne(cascade: [], inversedBy: 'cards')]
-    #[ORM\JoinColumn(nullable: true)]
     private ?Player $player = null;
 
 
-    #[ORM\ManyToOne(inversedBy: 'fold')]
-    #[ORM\JoinColumn(nullable: true)]
-    private ?SkullKing $skullKing = null;
 
     /**
-     * @param int|null $id
      * @param string $cardType
      * @param string|null $pirateName
      * @param string|null $color
      * @param string|null $value
      */
-    public function __construct(?int $id, string $cardType, ?string $pirateName, ?string $color, ?string $value)
+    public function __construct(string $cardType, ?string $pirateName, ?string $color, ?string $value)
     {
-        $this->id = $id;
         $this->cardType = $cardType;
         $this->pirateName = $pirateName;
         $this->color = $color;
@@ -52,46 +37,58 @@ class Card
 
     public static function coloredCard(CardColor $color, int $value): Card
     {
-        return new Card(null, CardType::COLORED->value, null, $color->value, $value);
+        return new Card( CardType::COLORED->value, null, $color->value, $value);
     }
 
     public static function pirateCard(PirateName $name): Card
     {
-        return new Card(null, CardType::PIRATE->value, $name->value, null, null);
+        return new Card( CardType::PIRATE->value, $name->value, null, null);
     }
 
     public static function skullCard(): Card
     {
-        return new Card(null, CardType::SKULLKING->value, null, null, null);
+        return new Card( CardType::SKULLKING->value, null, null, null);
     }
 
     public static function escapeCard(): Card
     {
-        return new Card(null, CardType::ESCAPE->value, null, null, null);
+        return new Card( CardType::ESCAPE->value, null, null, null);
     }
 
     public static function scaryMaryCard(): Card
     {
-        return new Card(null, CardType::SCARYMARY->value, null, null, null);
+        return new Card( CardType::SCARYMARY->value, null, null, null);
     }
 
     public static function mermaidCard(): Card
     {
-        return new Card(null, CardType::MERMAID->value, null, null, null);
+        return new Card( CardType::MERMAID->value, null, null, null);
     }
 
-
-    /**
-     * @return int|null
-     */
-    public function getId(): ?int
+    public static function create(string $cardId): Card
     {
-        return $this->id;
+
+        $splitId = explode('_', $cardId);
+        return match ($cardId) {
+            CardType::MERMAID->value =>  Card::mermaidCard(),
+            CardType::SKULLKING->value =>  Card::skullCard(),
+            CardType::ESCAPE->value =>  Card::escapeCard(),
+            CardType::SCARYMARY->value =>  Card::scaryMaryCard(),
+            default =>  str_contains($cardId, CardType::PIRATE->value)
+                ? Card::pirateCard(PirateName::from($splitId[0]))
+                : Card::coloredCard(CardColor::from($splitId[1]), $splitId[0]),
+        };
     }
 
-    /**
-     * @param int|null $id
-     */
+    public function getId(): string
+    {
+        return match ($this->cardType) {
+            CardType::COLORED->value => $this->value . "_" . $this->color,
+            CardType::PIRATE->value => $this->pirateName. "_PIRATE",
+            default => $this->cardType,
+        };
+    }
+
     public function setId(?int $id): void
     {
         $this->id = $id;
@@ -169,22 +166,6 @@ class Card
     {
         $this->player = $player;
         return $this;
-    }
-
-    /**
-     * @param SkullKing|null $skullKing
-     */
-    public function setSkullKing(?SkullKing $skullKing): void
-    {
-        $this->skullKing = $skullKing;
-    }
-
-    /**
-     * @return SkullKing|null
-     */
-    public function getSkullKing(): ?SkullKing
-    {
-        return $this->skullKing;
     }
 
     /**

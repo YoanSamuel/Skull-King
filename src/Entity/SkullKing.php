@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\SkullKingRepository;
+use DateTimeImmutable;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
@@ -18,22 +19,23 @@ class SkullKing
     private ?int $id = null;
 
     #[ORM\Column]
-    private ?\DateTimeImmutable $createdAt = null;
+    private ?DateTimeImmutable $createdAt = null;
 
     #[ORM\Version]
     #[ORM\Column(type: 'integer', nullable: false)]
     private int $version;
 
+    #[ORM\Column(type: 'integer', nullable: false)]
     private int $nbRound = 1;
 
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $currentPlayerId;
 
     #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $colorAsked;
+    private ?string $colorAsked = null;
 
-    #[ORM\Column(type: 'json', nullable:true)]
-    private ?array $jsonCards;
+    #[ORM\Column(name: 'jsonCards', type: 'json', nullable: true)]
+    private array $fold = [];
 
     #[ORM\Column(nullable: false)]
     private string $state;
@@ -41,7 +43,7 @@ class SkullKing
     #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: Player::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $players;
 
-    private array $fold = [];
+
 
 
     /**
@@ -103,11 +105,7 @@ class SkullKing
         return $this->id;
     }
 
-    /**
-     * @param Uuid $userId
-     * @return Player|mixed|null
-     */
-    public function findPlayer(Uuid $userId): mixed
+    public function findPlayer(Uuid $userId): Player|null
     {
         return $this->players->findFirst(
             function (int $key, Player $player) use ($userId) {
@@ -129,61 +127,55 @@ class SkullKing
     /**
      * @throws Exception
      */
-    public function playCard(Uuid $userId, Card $card): array
+    public function playCard(Uuid $userId, string $cardId): array
     {
 
         $player = $this->findPlayer($userId);
 
 
         if (is_null($player)) {
-            throw new \Exception('Ce joueur nexiste pas Billy!');
+            throw new Exception('Ce joueur nexiste pas Billy!');
         }
 
-        $playerHasAlReadyPlayed = !is_null($this->getCardInFoldFor($player));
-        if ($playerHasAlReadyPlayed) {
-            throw new \Exception('Tu ne peux pas jouer deux fois dans le même tour!');
+        if ($this->hasAlReadyPlayed($player)) {
+            throw new Exception('Tu ne peux pas jouer deux fois dans le même tour!');
         }
 
         if ($player->getId() !== $this->currentPlayerId) {
-            throw new \Exception('Ce n\'est pas à toi de jouer, ' . $player->getName() . '!');
+            throw new Exception('Ce n\'est pas à toi de jouer, ' . $player->getName() . '!');
         }
 
-        if (!$player->getCards()->contains($card)) {
-            throw new \Exception('Tu ne peux pas jouer une carte que tu ne possèdes pas , ' . $player->getName() . '!');
+        $card = $player->findCard($cardId);
+        if (is_null($card)) {
+            throw new Exception('Tu ne peux pas jouer une carte que tu ne possèdes pas , ' . $player->getName() . '!');
         }
 
         $isCardPlayedColored = $card->getCardType() == CardType::COLORED->value;
         $isColorAsked = !is_null($this->colorAsked);
         $isCardPlayedSameColor = $card->getColor() == $this->colorAsked;
-        $hasTheColorAsked = $player->getCards()->findFirst(function (int $key, Card $card) {
-            return $card->getColor() == $this->colorAsked;
-        });
+        $hasTheColorAsked = $player->hasTheColorAsked($this->colorAsked);
 
         if ($isColorAsked && $isCardPlayedColored && !$isCardPlayedSameColor && !$hasTheColorAsked) {
-            throw new \Exception('Tu TRICHEEEEEEEEEEEEEEEEEEEEES ' . $player->getName() . '!');
+            throw new Exception('Tu TRICHEEEEEEEEEEEEEEEEEEEEES ' . $player->getName() . '!');
         }
 
-        $card->setSkullKing($this);
-        $this->setFold($this->addCardInFold($player, $card));
+        $this->addCardInFold($player, $card);
 
         $this->currentPlayerId = $this->nextPlayerId();
 
         $cardsPlayedCount = count($this->fold);
         $allPlayersPlayed = $cardsPlayedCount === count($this->players);
 
+        $player->removeCardPlayed($card);
 
         if ($allPlayersPlayed) {
 
             $winner = $this->resolveFold($this->fold);
 
-            $this->players = $this->players->map(function (Player $player) {
-                $player->removeCardPlayed($this->fold);
-                return $player;
-            });
             $this->fold= [];
 
             $everyPlayersHasEmptyHand = $this->players->forAll(function (int $key, Player $player) {
-                return $player->getCards()->count() == 0;
+                return count($player->getCards()) == 0;
             });
 
             if ($everyPlayersHasEmptyHand) {
@@ -191,23 +183,20 @@ class SkullKing
             }
 
         }
-
         return $this->fold;
 
     }
 
-    public function getCardInFoldFor(Player $player): ?Card
+    public function hasAlReadyPlayed(Player $player): bool
     {
-        $cardInFold = $player->getCards()->findFirst(function (int $key, Card $card) {
-            return $card;
-        });
+
         foreach($this->fold as $cardPlayed) {
-            if($cardPlayed['card_id'] == $cardInFold->getId())
+            if($cardPlayed['player_id'] == $player->getId())
             {
-                return $cardInFold;
+                return true;
             }
         }
-        return null;
+        return false;
     }
 
     public function resolveFold(array $fold): Player
@@ -248,18 +237,12 @@ class SkullKing
         return $this->state;
     }
 
-    /**
-     * @return \DateTimeImmutable
-     */
-    public function getCreatedAt(): \DateTimeImmutable
+    public function getCreatedAt(): DateTimeImmutable
     {
         return $this->createdAt;
     }
 
-    /**
-     * @param \DateTimeImmutable $createdAt
-     */
-    public function setCreatedAt(\DateTimeImmutable $createdAt): void
+    public function setCreatedAt(DateTimeImmutable $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
@@ -285,18 +268,22 @@ class SkullKing
         $this->currentPlayerId = $currentPlayerId;
     }
 
-    private function prepareNextRound()
+    private function prepareNextRound() : void
     {
         //set score in players
         // creer fonction resolve_score
 
         $this->nbRound += 1;
         $this->state = SkullKingPhase::ANNOUNCE->value;
-
         $deck = new Deck();
+        /** @var Player $player */
         foreach ($this->players as $player) {
             $player->setAnnounce(null);
-            $player->setCards($deck->distribute($this->nbRound));
+            
+            $cardsId = array_map(function(Card $card) {
+                     return $card->getId();
+            }, $deck->distribute($this->nbRound)) ;
+            $player->setCards($cardsId);
 
         }
 
@@ -323,27 +310,21 @@ class SkullKing
         return $sortedPlayers[$nextPlayerIdIndex]->getId();
     }
 
-    public function getJsonCards(): ?array
-    {
-        return $this->jsonCards;
-    }
-
     /**
      * @param Player $player
      * @param Card $card
      * @return void
      */
-    public function addCardInFold(Player $player, Card $card): array
+    public function addCardInFold(Player $player, Card $card): void
     {
-        $this->fold[] = [
-            'player_id' => $player->getUserId(),
+        $this->fold[] = array(
+            'player_id' => $player->getUserId()->toRfc4122(),
             'player_name' => $player->getName(),
             'card_type' => $card->getCardType(),
             'card_value' => $card->getValue(),
             'card_pirate' => $card->getPirateName(),
             'card_color' => $card->getColor(),
             'card_id' => $card->getId(),
-        ];
-        return $this->fold;
+        );
     }
 }

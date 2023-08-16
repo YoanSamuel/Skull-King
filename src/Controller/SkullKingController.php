@@ -59,31 +59,27 @@ class SkullKingController extends AbstractController
         for ($i = 0; $i <= $skull->getNbRound(); $i++) {
             $announceValues[] = $i;
         }
-
+        $fold = $skull->getFold();
 
         $currentPlayer = $skull->findPlayer($userId);
         $topicName = "game_topic_$id";
+
         $skullData = [
             'id' => $id,
             'announceValues' => $announceValues,
-            'cards' => $currentPlayer->getCards()->map(function (Card $card) {
-                return new CardDTO($card);
-            })->filter(function (CardDTO $card) {
-                return is_null($card->skullKingId);
-            })->toArray(),
+            'cards' => array_values(array_map(function (string $cardId) use ($currentPlayer){
+                return new CardDTO(Card::create($cardId), $currentPlayer);
+            }, $currentPlayer->getCards())),
             'gamePhase' => $gamePhase,
-            'fold' => [],
+            'fold' => $fold,
             'players' => array_map(function (Player $player) {
                 return new PlayerDTO($player);
             }, $skull->getPlayers()->toArray()),
-            'skull' => array_map(function (SkullKing $skullKing) {
-                return new SkullDTO($skullKing);
-            }, [$skull]),
+            'skull' => new SkullDTO($skull),
             'topicName' => $topicName,
             'playerId' => $userId,
             'version' => $skull->getVersion(),
         ];
-
 
         return $this->render('game/index.html.twig', $skullData);
     }
@@ -132,10 +128,9 @@ class SkullKingController extends AbstractController
     public function playCard($id, $cardId, $playerId, Request $request): Response
     {
         $skull = $this->skullKingRepo->find($id);
-        $card = $this->cardRepo->find($cardId);
         try {
             $userId = new Uuid($request->cookies->get('userid'));
-            $skull->playCard($userId, $card);
+            $skull->playCard($userId, $cardId);
             $fold = $skull->getFold();
             $this->skullKingRepo->save($skull, true);
             $topicName = "game_topic_$id";
@@ -149,7 +144,7 @@ class SkullKingController extends AbstractController
                 'gamePhase' => $skull->getState(),
 
             ])));
-            dd($fold);
+
             return $this->redirectToRoute('current_game', ['id' => $id]);
 
         } catch (OptimisticLockException $e) {

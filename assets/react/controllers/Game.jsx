@@ -8,7 +8,8 @@ export default function ({
                              gameId,
                              eventSourceUrl,
                              playerId,
-                             skull
+                             skull,
+                             fold
                          }) {
 
     const [playersState, setPlayersState] = useState(players);
@@ -84,12 +85,13 @@ export default function ({
 
         }
         <p> Votre main : </p>
-        {cards.map((card) => {
+
+        {cards.map((card, index) => {
             return (gamePhaseState === 'PLAYCARD') ?
-                <form key={card.id} action={`/game/${gameId}/player/${playerId}/playcard/${card.id}`} method="POST">
+                <form key={`${card.id}_${index}`} action={`/game/${gameId}/player/${playerId}/playcard/${card.id}`} method="POST">
                     <button type="submit"> {card.cardType}</button>
                 </form>
-                : <span key={card.id}>{card.id} {card.cardType}</span>
+                : <span key={`${card.id}_${index}`}>{card.id} {card.cardType}</span>
         })
         }
 

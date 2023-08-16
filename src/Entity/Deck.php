@@ -57,11 +57,11 @@ class Deck
     }
 
 
-    public function distribute(int $nbCards): ArrayCollection
+    public function distribute(int $nbCards): array
     {
-        $cards = new ArrayCollection();
+        $cards = [];
         for ($i = 0; $i < $nbCards; ++$i) {
-            $cards->add($this->pop());
+            $cards[] = $this->pop();
         }
         return $cards;
     }

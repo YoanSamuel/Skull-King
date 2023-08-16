@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
@@ -24,8 +23,8 @@ class Player
     #[ORM\Column]
     private string $name;
 
-    #[ORM\OneToMany(mappedBy: 'player', targetEntity: Card::class, cascade: ['persist'], fetch: 'EAGER')]
-    private Collection $cards;
+    #[ORM\Column(name: 'cards', type: 'json')]
+    private array $cards = [];
 
     #[ORM\Column(nullable: true)]
     private ?int $announce;
@@ -34,14 +33,13 @@ class Player
     #[ORM\JoinColumn(nullable: false)]
     private ?SkullKing $skullKing;
 
-    public function __construct(SkullKing $skullKing, GameRoomUser $user, Collection $cards, ?int $announce = null)
+    public function __construct(SkullKing $skullKing, GameRoomUser $user, array $cards, ?int $announce = null)
     {
 
         $this->userId = $user->getUserId();
         $this->name = $user->getUserName();
-        $this->cards = new ArrayCollection();
         foreach ($cards as $card) {
-            $this->cards->add($card->setPlayer($this));
+            $this->cards[] = $card->getId();
         }
         $this->announce = $announce;
         $this->skullKing = $skullKing;
@@ -52,12 +50,20 @@ class Player
         return $this->id;
     }
 
-    public function getCards(): Collection
+    public function getCards(): array
     {
         return $this->cards;
     }
 
-    public function setCards(Collection $cards)
+    public function findCard(string $cardId): ?Card
+    {
+        if (in_array($cardId, $this->cards)) {
+            return Card::create($cardId);
+        }
+        return null;
+    }
+
+    public function setCards(array $cards) : void
     {
         $this->cards = $cards;
     }
@@ -96,24 +102,31 @@ class Player
         return $this;
     }
 
-    public function removeCardPlayed(array $fold): void
+    public function removeCardPlayed(Card $card): void
     {
-        $cardPlayedKey = null;
+        $card->setPlayer(null);
+        $index = array_search($card->getId(), $this->cards);
+        unset($this->cards[$index]);
+    }
 
-        foreach ($fold as $card) {
-            if ($card['player_id'] === $this->getId()) {
-                $cardPlayedKey = $card['player_id'];
-                $cardId = $card['card_id'];
-                break;
+    public function setId(?int $id): void
+    {
+        $this->id = $id;
+    }
+
+    public function hasTheColorAsked(?string $colorAsked): bool
+    {
+        if(is_null($colorAsked)) {
+            return false;
+        }
+
+        foreach($this->cards as $cardId) {
+            $card = Card::create($cardId);
+            if($card->getColor() == $colorAsked) {
+                return true;
             }
         }
-
-        if ($cardPlayedKey !== null) {
-
-            $this->cards = $this->cards->filter(function (Card $card) use ($cardId) {
-                return $card->getId() !== $cardId;
-            });
-        }
+        return false;
     }
 
 }
