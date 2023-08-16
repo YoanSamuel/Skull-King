@@ -96,20 +96,24 @@ class Player
         return $this;
     }
 
-    public function removeCardPlayed(ArrayCollection|Collection $fold): void
+    public function removeCardPlayed(array $fold): void
     {
+        $cardPlayedKey = null;
 
-        $cardPlayed = $fold->findFirst(function (int $key, Card $card) {
-            if ($card->getPlayer() == null) {
-                return false;
+        foreach ($fold as $card) {
+            if ($card['player_id'] === $this->getId()) {
+                $cardPlayedKey = $card['player_id'];
+                $cardId = $card['card_id'];
+                break;
             }
-            return $card->getPlayer()->getId() == $this->getId();
-        });
-        $this->cards = $this->cards->filter(function (Card $card) use ($cardPlayed) {
-            return $card->getId() != $cardPlayed->getId();
-        });
+        }
 
-//        $cardPlayed->setPlayer(null);
+        if ($cardPlayedKey !== null) {
+
+            $this->cards = $this->cards->filter(function (Card $card) use ($cardId) {
+                return $card->getId() !== $cardId;
+            });
+        }
     }
 
 }

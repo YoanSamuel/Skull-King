@@ -6,12 +6,17 @@ namespace App\Repository;
 use App\Entity\SkullKing;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Symfony\Component\Serializer\SerializerInterface;
 
 class SkullKingRepository extends ServiceEntityRepository
 {
-    public function __construct(ManagerRegistry $registry)
+    private SerializerInterface $serializer;
+
+    public function __construct(ManagerRegistry $registry, SerializerInterface $serializer)
     {
         parent::__construct($registry, SkullKing::class);
+        $this->serializer = $serializer;
     }
 
     public function save(SkullKing $entity, bool $flush = false): void
@@ -58,12 +63,22 @@ class SkullKingRepository extends ServiceEntityRepository
 //        ;
 //    }
 
+    public function serialize(SkullKing $skullKing): string
+    {
+        return $this->serializer->serialize($skullKing, 'json', [AbstractNormalizer::IGNORED_ATTRIBUTES => ['announceValues']]);
+    }
+
+    public function deserialize(string $json): SkullKing
+    {
+        return $this->serializer->deserialize($json, SkullKing::class, 'json');
+    }
     public function findAllWithUsers(): array
     {
         return $this->createQueryBuilder('gr')->addSelect(['gru'])
             ->leftJoin('gr.users', 'gru')
             ->getQuery()->getResult();
     }
+
 
 }
 

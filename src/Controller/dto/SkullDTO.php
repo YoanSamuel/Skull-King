@@ -15,9 +15,7 @@ class SkullDTO
     public function __construct(SkullKing $skullKing)
     {
         $this->id = $skullKing->getId();
-        $this->fold = $skullKing->getFold()->map(function (Card $card) {
-            return new CardDTO($card);
-        })->toArray();
+        $this->fold = $skullKing->getFold();
         $this->players = $skullKing->getPlayers()->map(function (Player $player) {
             return new PlayerDTO($player);
         })->toArray();

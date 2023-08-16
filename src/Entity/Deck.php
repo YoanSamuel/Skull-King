@@ -56,6 +56,7 @@ class Deck
         return array_pop($this->cards);
     }
 
+
     public function distribute(int $nbCards): ArrayCollection
     {
         $cards = new ArrayCollection();
@@ -64,6 +65,5 @@ class Deck
         }
         return $cards;
     }
-
 
 }

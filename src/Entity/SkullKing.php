@@ -32,6 +32,8 @@ class SkullKing
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $colorAsked;
 
+    #[ORM\Column(type: 'json', nullable:true)]
+    private ?array $jsonCards;
 
     #[ORM\Column(nullable: false)]
     private string $state;
@@ -39,8 +41,7 @@ class SkullKing
     #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: Player::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $players;
 
-    #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: Card::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
-    private Collection $fold;
+    private array $fold = [];
 
 
     /**
@@ -59,11 +60,10 @@ class SkullKing
             $this->players->add(new Player($this, $user, $deck->distribute($this->nbRound), null));
 
         }
-        $this->fold = new ArrayCollection();
+        $this->fold = [];
         $this->state = SkullKingPhase::ANNOUNCE->value;
-
-
     }
+
 
     /**
      * @return int
@@ -115,18 +115,13 @@ class SkullKing
             });
     }
 
-    /**
-     * @return Collection<int, Player>
-     */
     public function getPlayers(): Collection
     {
         return $this->players;
     }
 
-    /**
-     * @return Collection<int, Card>
-     */
-    public function getFold(): Collection
+
+    public function getFold(): array
     {
         return $this->fold;
     }
@@ -169,11 +164,11 @@ class SkullKing
         }
 
         $card->setSkullKing($this);
-        $this->fold->add($card);
+        $this->setFold($this->addCardInFold($player, $card));
 
         $this->currentPlayerId = $this->nextPlayerId();
 
-        $cardsPlayedCount = $this->fold->count();
+        $cardsPlayedCount = count($this->fold);
         $allPlayersPlayed = $cardsPlayedCount === count($this->players);
 
 
@@ -185,7 +180,7 @@ class SkullKing
                 $player->removeCardPlayed($this->fold);
                 return $player;
             });
-            $this->fold->clear();
+            $this->fold= [];
 
             $everyPlayersHasEmptyHand = $this->players->forAll(function (int $key, Player $player) {
                 return $player->getCards()->count() == 0;
@@ -197,19 +192,25 @@ class SkullKing
 
         }
 
-
-        return $this->fold->toArray();
+        return $this->fold;
 
     }
 
     public function getCardInFoldFor(Player $player): ?Card
     {
-        return $this->fold->findFirst(function (int $key, Card $card) use ($player) {
-            return $card->getPlayer()->getId() == $player->getId();
+        $cardInFold = $player->getCards()->findFirst(function (int $key, Card $card) {
+            return $card;
         });
+        foreach($this->fold as $cardPlayed) {
+            if($cardPlayed['card_id'] == $cardInFold->getId())
+            {
+                return $cardInFold;
+            }
+        }
+        return null;
     }
 
-    public function resolveFold(Collection $fold): Player
+    public function resolveFold(array $fold): Player
     {
         $winningCard = null;
         $winningPlayer = null;
@@ -231,9 +232,9 @@ class SkullKing
     }
 
     /**
-     * @param Collection $fold
+     * @param array $fold
      */
-    public function setFold(Collection $fold): void
+    public function setFold(array $fold): void
     {
         $this->fold = $fold;
     }
@@ -322,5 +323,27 @@ class SkullKing
         return $sortedPlayers[$nextPlayerIdIndex]->getId();
     }
 
+    public function getJsonCards(): ?array
+    {
+        return $this->jsonCards;
+    }
 
+    /**
+     * @param Player $player
+     * @param Card $card
+     * @return void
+     */
+    public function addCardInFold(Player $player, Card $card): array
+    {
+        $this->fold[] = [
+            'player_id' => $player->getUserId(),
+            'player_name' => $player->getName(),
+            'card_type' => $card->getCardType(),
+            'card_value' => $card->getValue(),
+            'card_pirate' => $card->getPirateName(),
+            'card_color' => $card->getColor(),
+            'card_id' => $card->getId(),
+        ];
+        return $this->fold;
+    }
 }

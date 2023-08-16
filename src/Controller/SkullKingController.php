@@ -51,20 +51,19 @@ class SkullKingController extends AbstractController
     {
 
         $skull = $this->skullKingRepo->find($id);
-
         $userId = new Uuid($request->cookies->get('userid'));
-        $currentPlayer = $skull->findPlayer($userId);
+
         $gamePhase = $skull->getState();
 
-        // Champ Annonce
         $announceValues = [];
         for ($i = 0; $i <= $skull->getNbRound(); $i++) {
             $announceValues[] = $i;
         }
-        $fold = [];
-        $topicName = "game_topic_$id";
 
-        return $this->render("game/index.html.twig", [
+
+        $currentPlayer = $skull->findPlayer($userId);
+        $topicName = "game_topic_$id";
+        $skullData = [
             'id' => $id,
             'announceValues' => $announceValues,
             'cards' => $currentPlayer->getCards()->map(function (Card $card) {
@@ -73,9 +72,7 @@ class SkullKingController extends AbstractController
                 return is_null($card->skullKingId);
             })->toArray(),
             'gamePhase' => $gamePhase,
-            'fold' => array_map(function (Card $card) {
-                return new CardDTO($card);
-            }, $skull->getFold()->toArray()),
+            'fold' => [],
             'players' => array_map(function (Player $player) {
                 return new PlayerDTO($player);
             }, $skull->getPlayers()->toArray()),
@@ -85,9 +82,10 @@ class SkullKingController extends AbstractController
             'topicName' => $topicName,
             'playerId' => $userId,
             'version' => $skull->getVersion(),
+        ];
 
-        ]);
 
+        return $this->render('game/index.html.twig', $skullData);
     }
 
     /**
@@ -141,16 +139,17 @@ class SkullKingController extends AbstractController
             $fold = $skull->getFold();
             $this->skullKingRepo->save($skull, true);
             $topicName = "game_topic_$id";
+
             $this->hub->publish(new Update(
                 $topicName, json_encode([
                 'status' => 'player_play_card',
                 'userId' => $userId,
-                'fold' => $fold->toArray(),
+                'fold' => $fold,
                 'players' => $skull->getPlayers()->toArray(),
                 'gamePhase' => $skull->getState(),
 
             ])));
-
+            dd($fold);
             return $this->redirectToRoute('current_game', ['id' => $id]);
 
         } catch (OptimisticLockException $e) {
