@@ -91,7 +91,7 @@ export default function ({
                 <form key={`${card.id}_${index}`} action={`/game/${gameId}/player/${playerId}/playcard/${card.id}`} method="POST">
                     <button type="submit"> {card.cardType}</button>
                 </form>
-                : <span key={`${card.id}_${index}`}>{card.id} {card.cardType}</span>
+                : <span key={`${card.id}_${index}`}>{card.id} </span>
         })
         }
 

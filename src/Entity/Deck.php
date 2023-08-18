@@ -41,15 +41,20 @@ class Deck
             $this->cards[] = Card::escapeCard();
             $this->cards[] = Card::escapeCard();
             $this->cards[] = Card::escapeCard();
-            $this->cards[] = Card::mermaidCard();
-            $this->cards[] = Card::mermaidCard();
+            $this->cards[] = Card::mermaidCard(MermaidName::ELISABETH);
+            $this->cards[] = Card::mermaidCard(MermaidName::MONIQUE);
             $this->cards[] = Card::scaryMaryCard();
+            $this->shuffle();
         } else {
-
             $this->cards = $cards;
+            $this->shuffle();
         }
     }
 
+    public function shuffle(): bool
+    {
+        return shuffle($this->cards);
+    }
 
     public function pop()
     {

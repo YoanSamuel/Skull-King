@@ -44,8 +44,6 @@ class SkullKing
     private Collection $players;
 
 
-
-
     /**
      * @throws Exception
      */
@@ -161,7 +159,7 @@ class SkullKing
 
         $this->addCardInFold($player, $card);
 
-        $this->currentPlayerId = $this->nextPlayerId();
+        $this->currentPlayerId = $this->nextPlayerId($this->currentPlayerId);
 
         $cardsPlayedCount = count($this->fold);
         $allPlayersPlayed = $cardsPlayedCount === count($this->players);
@@ -170,8 +168,10 @@ class SkullKing
 
         if ($allPlayersPlayed) {
 
-            $winner = $this->resolveFold($this->fold);
-
+            $winner = $this->resolveFold();
+            if(!is_null($winner)) {
+                $this->currentPlayerId = $winner->getId();
+            }
             $this->fold= [];
 
             $everyPlayersHasEmptyHand = $this->players->forAll(function (int $key, Player $player) {
@@ -199,12 +199,17 @@ class SkullKing
         return false;
     }
 
-    public function resolveFold(array $fold): Player
+    public function resolveFold(): ?Player
     {
-        $winningCard = null;
-        $winningPlayer = null;
+        $foldSortedByPlayerId = $this->getSortedFoldByPlayerId();
 
-        return $this->players[0];
+        $foldToResolve = new Fold($foldSortedByPlayerId, $this->fold);
+        $cardInFold =  $foldToResolve->resolve();
+        if(is_null($cardInFold)) {
+            return null;
+        }
+        return $this->findPlayer($cardInFold->getPlayerId());
+
     }
 
     public function getPlayersSortedById(): array
@@ -289,22 +294,22 @@ class SkullKing
 
     }
 
-    private function nextPlayerId(): int
+    private function nextPlayerId( int $targetPlayerId): int
     {
-        $nextPlayerIdIndex = null;
-        $currentPlayerIdIndex = null;
+
+        $targetPlayerIdIndex = null;
         $sortedPlayers = $this->getPlayersSortedById();
         foreach ($sortedPlayers as $index => $player) {
-            if ($player->getId() == $this->currentPlayerId) {
-                $currentPlayerIdIndex = $index;
+            if ($player->getId() == $targetPlayerId) {
+                $targetPlayerIdIndex = $index;
             }
         }
 
         $maxIndex = count($sortedPlayers) - 1;
-        if ($currentPlayerIdIndex == $maxIndex) {
+        if ($targetPlayerIdIndex == $maxIndex) {
             $nextPlayerIdIndex = 0;
         } else {
-            $nextPlayerIdIndex = $currentPlayerIdIndex + 1;
+            $nextPlayerIdIndex = $targetPlayerIdIndex + 1;
         }
 
         return $sortedPlayers[$nextPlayerIdIndex]->getId();
@@ -323,8 +328,26 @@ class SkullKing
             'card_type' => $card->getCardType(),
             'card_value' => $card->getValue(),
             'card_pirate' => $card->getPirateName(),
+            'card_mermaid' => $card->getMermaidName(),
             'card_color' => $card->getColor(),
             'card_id' => $card->getId(),
         );
     }
+
+    /**
+     * @return int[]|null[]
+     */
+    public function getSortedFoldByPlayerId(): array
+    {
+        $id = $this->currentPlayerId;
+        $foldSortedByPlayerId = [$this->currentPlayerId];
+        while ($id != $this->currentPlayerId) {
+
+            $id = $this->nextPlayerId($id);
+            $foldSortedByPlayerId[] = $id;
+        }
+        return $foldSortedByPlayerId;
+    }
+
+
 }

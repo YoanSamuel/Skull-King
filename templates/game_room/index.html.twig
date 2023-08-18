@@ -46,4 +46,14 @@
     <div class="row">
         <script src="{{ asset('js/index.js') }}"></script>
     </div>
+    <script type="module">
+        import { MercureHub } from 'https://cdn.jsdelivr.net/npm/mercure@0.10/dist/mercure.umd.min.mjs';
+
+        const hub = new MercureHub('{{ topicName }}'); // Utilisez ici la valeur de la variable topicName
+        hub.on('message', event => {
+            // Gérer le message reçu depuis le hub Mercure
+            console.log(event.data);
+        });
+    </script>
+
 {% endblock %}

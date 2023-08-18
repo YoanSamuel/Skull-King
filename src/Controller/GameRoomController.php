@@ -43,13 +43,14 @@ class GameRoomController extends AbstractController
         foreach ($allRooms as $room) {
             $room->setContainsCurrentUser(new Uuid($request->cookies->get('userid')));
         }
-
+        $topicName = "game_room_topic_1954";
 
         return $this->render('game_room/index.html.twig', [
             'controller_name' => 'GameRoomController',
             'gameRooms' => $allRooms,
             'isEmpty' => empty($allRooms),
-            'form' => $form->createView()
+            'form' => $form->createView(),
+            'topicName' => $topicName
         ]);
     }
 
@@ -66,7 +67,12 @@ class GameRoomController extends AbstractController
         $gameRoom->addUser($user);
 
         $this->gameRoomRepository->save($gameRoom, true);
-//            $this->enterInGame($gameRoom->getId());
+        $topicName = "game_room_topic_".$gameRoom->getId();
+        $this->hub->publish(new Update($topicName, json_encode([
+            'status' => 'new_game',
+            'user' => new UserDTO($user),
+        ])));
+
         return $this->redirectToRoute("waiting_game_room", ['id' => $gameRoom->getId()]);
 
     }
@@ -87,7 +93,7 @@ class GameRoomController extends AbstractController
         $topicName = "game_room_topic_$id";
         $this->hub->publish(new Update($topicName, json_encode([
             'status' => 'player_joined',
-            'user' => new UserDTO($user)
+            'user' => new UserDTO($user),
         ])));
 
 
@@ -99,7 +105,6 @@ class GameRoomController extends AbstractController
     {
         $currentGame = $this->gameRoomRepository->findOneBy(['id' => $id]);
         $topicName = "game_room_topic_$id";
-
         return $this->render("game_room/currentGame.html.twig", [
             'roomid' => $currentGame->getId(),
             'users' => array_map(function (GameRoomUser $user) {
@@ -107,6 +112,7 @@ class GameRoomController extends AbstractController
             }, $currentGame->getUsers()->toArray()),
             'skullkingid' => $currentGame->getSkullKing()?->getId(),
             'topicName' => $topicName
+
         ]);
     }
 
