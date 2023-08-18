@@ -43,14 +43,12 @@ class GameRoomController extends AbstractController
         foreach ($allRooms as $room) {
             $room->setContainsCurrentUser(new Uuid($request->cookies->get('userid')));
         }
-        $topicName = "game_room_topic_1954";
 
         return $this->render('game_room/index.html.twig', [
             'controller_name' => 'GameRoomController',
             'gameRooms' => $allRooms,
             'isEmpty' => empty($allRooms),
             'form' => $form->createView(),
-            'topicName' => $topicName
         ]);
     }
 
@@ -67,7 +65,7 @@ class GameRoomController extends AbstractController
         $gameRoom->addUser($user);
 
         $this->gameRoomRepository->save($gameRoom, true);
-        $topicName = "game_room_topic_".$gameRoom->getId();
+        $topicName = "game_room_topic_" . $gameRoom->getId();
         $this->hub->publish(new Update($topicName, json_encode([
             'status' => 'new_game',
             'user' => new UserDTO($user),
