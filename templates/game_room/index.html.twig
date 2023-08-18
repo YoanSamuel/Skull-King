@@ -3,20 +3,33 @@
 {% block title %}Hello GameRoomController!{% endblock %}
 
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
+    <style>
+        .example-wrapper {
+            margin: 1em auto;
+            max-width: 800px;
+            width: 95%;
+            font: 18px/1.5 sans-serif;
+        }
 
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
+        .example-wrapper code {
+            background: #F5F5F5;
+            padding: 2px 6px;
+        }
+    </style>
 
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'C:/Users/utilisateur/Documents/skull-king/src/Controller/GameRoomController.php'|file_link(0) }}">src/Controller/GameRoomController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'C:/Users/utilisateur/Documents/skull-king/templates/game_room/index.html.twig'|file_link(0) }}">templates/game_room/index.html.twig</a></code></li>
-    </ul>
-</div>
+    <div class="example-wrapper">
+        <h1>Hello {{ controller_name }}! ✅</h1>
+
+        This friendly message is coming from:
+        <ul>
+            <li>Your controller at <code><a
+                            href="{{ 'C:/Users/utilisateur/Documents/skull-king/src/Controller/GameRoomController.php'|file_link(0) }}">src/Controller/GameRoomController.php</a></code>
+            </li>
+            <li>Your template at <code><a
+                            href="{{ 'C:/Users/utilisateur/Documents/skull-king/templates/game_room/index.html.twig'|file_link(0) }}">templates/game_room/index.html.twig</a></code>
+            </li>
+        </ul>
+    </div>
 
     <div>
         {{ form(form) }}
@@ -28,13 +41,13 @@
             {% for room in gameRooms %}
                 <li>{{ room.id }}
                     {{ room.createdAt| date("Y/m/d") }}
-                    {% if (room.users| length < 6) and (room.containsCurrentUser == false)  %}
-                     <form id="{{ room.id }}" action="{{ path("join_game_room", { id: room.id})  }}" method ="POST">
-                         <button type="submit"> REJOINDRE </button>
-                     </form>
+                    {% if (room.users| length < 6) and (room.containsCurrentUser == false) %}
+                        <form id="{{ room.id }}" action="{{ path("join_game_room", { id: room.id}) }}" method="POST">
+                            <button type="submit"> REJOINDRE</button>
+                        </form>
                     {% endif %}
                     {% if room.containsCurrentUser == true %}
-                    <a href="{{ path('waiting_game_room', { id: room.id }) }}">Aller dans la Salle de jeux</a>
+                        <a href="{{ path('waiting_game_room', { id: room.id }) }}">Aller dans la Salle de jeux</a>
                     {% endif %}
 
                 </li>
@@ -46,14 +59,5 @@
     <div class="row">
         <script src="{{ asset('js/index.js') }}"></script>
     </div>
-    <script type="module">
-        import { MercureHub } from 'https://cdn.jsdelivr.net/npm/mercure@0.10/dist/mercure.umd.min.mjs';
-
-        const hub = new MercureHub('{{ topicName }}'); // Utilisez ici la valeur de la variable topicName
-        hub.on('message', event => {
-            // Gérer le message reçu depuis le hub Mercure
-            console.log(event.data);
-        });
-    </script>
 
 {% endblock %}

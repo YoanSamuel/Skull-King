@@ -2,8 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-
 class Deck
 {
 
@@ -44,10 +42,8 @@ class Deck
             $this->cards[] = Card::mermaidCard(MermaidName::ELISABETH);
             $this->cards[] = Card::mermaidCard(MermaidName::MONIQUE);
             $this->cards[] = Card::scaryMaryCard();
-            $this->shuffle();
         } else {
             $this->cards = $cards;
-            $this->shuffle();
         }
     }
 

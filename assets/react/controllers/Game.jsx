@@ -88,8 +88,9 @@ export default function ({
 
         {cards.map((card, index) => {
             return (gamePhaseState === 'PLAYCARD') ?
-                <form key={`${card.id}_${index}`} action={`/game/${gameId}/player/${playerId}/playcard/${card.id}`} method="POST">
-                    <button type="submit"> {card.cardType}</button>
+                <form key={`${card.id}_${index}`} action={`/game/${gameId}/player/${playerId}/playcard/${card.id}`}
+                      method="POST">
+                    <button type="submit"> {card.id}</button>
                 </form>
                 : <span key={`${card.id}_${index}`}>{card.id} </span>
         })

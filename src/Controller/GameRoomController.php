@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Controller\dto\UserDTO;
+use App\Entity\Deck;
 use App\Entity\GameRoom;
 use App\Entity\GameRoomUser;
 use App\Entity\SkullKing;
@@ -66,10 +67,11 @@ class GameRoomController extends AbstractController
 
         $this->gameRoomRepository->save($gameRoom, true);
         $topicName = "game_room_topic_" . $gameRoom->getId();
-        $this->hub->publish(new Update($topicName, json_encode([
-            'status' => 'new_game',
-            'user' => new UserDTO($user),
-        ])));
+//        $this->hub->publish(new Update($topicName, json_encode([
+//            'status' => 'new_game',
+//            'user' => new UserDTO($user),
+//            'topicName' => $topicName
+//        ])));
 
         return $this->redirectToRoute("waiting_game_room", ['id' => $gameRoom->getId()]);
 
@@ -91,7 +93,6 @@ class GameRoomController extends AbstractController
         $topicName = "game_room_topic_$id";
         $this->hub->publish(new Update($topicName, json_encode([
             'status' => 'player_joined',
-            'user' => new UserDTO($user),
         ])));
 
 
@@ -123,7 +124,9 @@ class GameRoomController extends AbstractController
     {
         $gameRoom = $this->gameRoomRepository->findOneBy(['id' => $id]);
         $users = $gameRoom->getUsers();
-        $skull = new SkullKing($users);
+        $deck = new Deck();
+        $deck->shuffle();
+        $skull = new SkullKing($users, $deck);
         $skull->setCreatedAt(new DateTimeImmutable());
 
 

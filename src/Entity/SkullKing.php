@@ -169,10 +169,10 @@ class SkullKing
         if ($allPlayersPlayed) {
 
             $winner = $this->resolveFold();
-            if(!is_null($winner)) {
+            if (!is_null($winner)) {
                 $this->currentPlayerId = $winner->getId();
             }
-            $this->fold= [];
+            $this->fold = [];
 
             $everyPlayersHasEmptyHand = $this->players->forAll(function (int $key, Player $player) {
                 return count($player->getCards()) == 0;
@@ -190,9 +190,8 @@ class SkullKing
     public function hasAlReadyPlayed(Player $player): bool
     {
 
-        foreach($this->fold as $cardPlayed) {
-            if($cardPlayed['player_id'] == $player->getId())
-            {
+        foreach ($this->fold as $cardPlayed) {
+            if ($cardPlayed['player_id'] == $player->getId()) {
                 return true;
             }
         }
@@ -204,8 +203,8 @@ class SkullKing
         $foldSortedByPlayerId = $this->getSortedFoldByPlayerId();
 
         $foldToResolve = new Fold($foldSortedByPlayerId, $this->fold);
-        $cardInFold =  $foldToResolve->resolve();
-        if(is_null($cardInFold)) {
+        $cardInFold = $foldToResolve->resolve();
+        if (is_null($cardInFold)) {
             return null;
         }
         return $this->findPlayer($cardInFold->getPlayerId());
@@ -273,7 +272,7 @@ class SkullKing
         $this->currentPlayerId = $currentPlayerId;
     }
 
-    private function prepareNextRound() : void
+    private function prepareNextRound(): void
     {
         //set score in players
         // creer fonction resolve_score
@@ -281,20 +280,21 @@ class SkullKing
         $this->nbRound += 1;
         $this->state = SkullKingPhase::ANNOUNCE->value;
         $deck = new Deck();
+        $deck->shuffle();
         /** @var Player $player */
         foreach ($this->players as $player) {
             $player->setAnnounce(null);
-            
-            $cardsId = array_map(function(Card $card) {
-                     return $card->getId();
-            }, $deck->distribute($this->nbRound)) ;
+
+            $cardsId = array_map(function (Card $card) {
+                return $card->getId();
+            }, $deck->distribute($this->nbRound));
             $player->setCards($cardsId);
 
         }
 
     }
 
-    private function nextPlayerId( int $targetPlayerId): int
+    private function nextPlayerId(int $targetPlayerId): int
     {
 
         $targetPlayerIdIndex = null;

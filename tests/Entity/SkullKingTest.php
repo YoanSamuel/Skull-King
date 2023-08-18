@@ -95,6 +95,7 @@ class SkullKingTest extends TestCase
             'card_pirate' => $card->getPirateName(),
             'card_color' => $card->getColor(),
             'card_id' => $card->getId(),
+            'card_mermaid' => $card->getMermaidName(),
         )], $game->getFold());
 
         $this->assertEquals($playerTwo->getId(), $game->getCurrentPlayerId());
