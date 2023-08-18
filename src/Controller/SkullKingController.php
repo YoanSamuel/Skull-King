@@ -7,7 +7,6 @@ use App\Controller\dto\PlayerDTO;
 use App\Controller\dto\SkullDTO;
 use App\Entity\Card;
 use App\Entity\Player;
-use App\Entity\SkullKing;
 use App\Repository\CardRepository;
 use App\Repository\SkullKingRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -61,13 +60,13 @@ class SkullKingController extends AbstractController
         }
         $fold = $skull->getFold();
 
-        $currentPlayer = $skull->findPlayer($userId);
+        $currentPlayer = $skull->findPlayerByUserId($userId);
         $topicName = "game_topic_$id";
 
         $skullData = [
             'id' => $id,
             'announceValues' => $announceValues,
-            'cards' => array_values(array_map(function (string $cardId) use ($currentPlayer){
+            'cards' => array_values(array_map(function (string $cardId) use ($currentPlayer) {
                 return new CardDTO(Card::create($cardId), $currentPlayer);
             }, $currentPlayer->getCards())),
             'gamePhase' => $gamePhase,

@@ -2,14 +2,13 @@
 
 namespace App\Entity;
 
-use Symfony\Component\Uid\Uuid;
 
 class CardInFold
 {
     private Card $card;
-    private Uuid $playerId;
+    private int $playerId;
 
-    public function __construct(string $cardId, Uuid $playerId)
+    public function __construct(string $cardId, int $playerId)
     {
 
         $this->card = Card::create($cardId);
@@ -21,7 +20,7 @@ class CardInFold
         return $this->card;
     }
 
-    public function getPlayerId(): Uuid
+    public function getPlayerId(): int
     {
         return $this->playerId;
     }

@@ -244,4 +244,37 @@ class FoldResolverTest extends TestCase
         $this->assertEquals($result5, null);
     }
 
+    public function test_all_players_played_same_color_should_return_winner()
+    {
+
+        $fold5 = new Fold(["7456109d-755b-40c2-9ef7-9fda8ff60abe",
+            "14b44a8a-b322-415c-9a2c-72e9d139ecd8"
+        ],
+            [
+                [
+                    "player_id" => "14b44a8a-b322-415c-9a2c-72e9d139ecd8",
+                    "player_name" => "Morgan",
+                    "card_type" => "COLORED",
+                    "card_value" => "4",
+                    "card_pirate" => null,
+                    "card_color" => "BLACK",
+                    "card_id" => "4_BLACK",
+                ],
+                [
+                    "player_id" => "7456109d-755b-40c2-9ef7-9fda8ff60abe",
+                    "player_name" => "Davy",
+                    "card_type" => "COLORED",
+                    "card_value" => "9",
+                    "card_pirate" => null,
+                    "card_color" => "BLACK",
+                    "card_id" => "9_BLACK",
+                ],
+
+            ]);
+
+        $result5 = $fold5->resolve();
+        $this->assertEquals($result5, new CardInFold("9_BLACK", new Uuid("7456109d-755b-40c2-9ef7-9fda8ff60abe")));
+    }
+
+
 }

@@ -93,6 +93,7 @@ class GameRoomController extends AbstractController
         $topicName = "game_room_topic_$id";
         $this->hub->publish(new Update($topicName, json_encode([
             'status' => 'player_joined',
+            'user' => new UserDTO($user)
         ])));
 
 

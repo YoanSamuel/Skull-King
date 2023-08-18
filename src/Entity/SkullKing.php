@@ -43,6 +43,8 @@ class SkullKing
     #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: Player::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $players;
 
+    #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: FoldResult::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $foldResults;
 
     /**
      * @throws Exception
@@ -62,6 +64,7 @@ class SkullKing
         }
         $this->fold = [];
         $this->state = SkullKingPhase::ANNOUNCE->value;
+        $this->foldResults = new ArrayCollection();
     }
 
 
@@ -76,7 +79,7 @@ class SkullKing
     public function announce(Uuid $userId, int $announce): void
     {
         $count = 0;
-        $player = $this->findPlayer($userId);
+        $player = $this->findPlayerByUserId($userId);
         $player->setAnnounce($announce);
 
         foreach ($this->players as $playerInGame) {
@@ -89,12 +92,13 @@ class SkullKing
             $this->state = SkullKingPhase::PLAYCARD->value;
             $sortedPlayers = $this->getPlayersSortedById();
             $this->currentPlayerId = $sortedPlayers[0]->getId();
+            $this->foldResults->add(FoldResult::announce($this));
         }
     }
 
     public function getAnnouncePerPlayer(Uuid $userId): int
     {
-        $player = $this->findPlayer($userId);
+        $player = $this->findPlayerByUserId($userId);
         return $player->getAnnounce();
     }
 
@@ -103,11 +107,19 @@ class SkullKing
         return $this->id;
     }
 
-    public function findPlayer(Uuid $userId): Player|null
+    public function findPlayerByUserId(Uuid $userId): Player|null
     {
         return $this->players->findFirst(
             function (int $key, Player $player) use ($userId) {
                 return $player->getUserId()->equals($userId);
+            });
+    }
+
+    public function findPlayerById(int $playerId): Player|null
+    {
+        return $this->players->findFirst(
+            function (int $key, Player $player) use ($playerId) {
+                return $player->getId() == $playerId;
             });
     }
 
@@ -128,7 +140,7 @@ class SkullKing
     public function playCard(Uuid $userId, string $cardId): array
     {
 
-        $player = $this->findPlayer($userId);
+        $player = $this->findPlayerByUserId($userId);
 
 
         if (is_null($player)) {
@@ -170,9 +182,20 @@ class SkullKing
 
             $winner = $this->resolveFold();
             if (!is_null($winner)) {
+
                 $this->currentPlayerId = $winner->getId();
+
+                // rename en roundResult le fold fooldresult
+                /**
+                 * @var FoldResult $roundFoldResult
+                 */
+                $roundFoldResult = $this->foldResults->findFirst(function (int $key, FoldResult $foldResult) {
+                    return $this->nbRound == $foldResult->getNbRound();
+                });
+                $roundFoldResult->incrementFoldDone($winner);
             }
             $this->fold = [];
+
 
             $everyPlayersHasEmptyHand = $this->players->forAll(function (int $key, Player $player) {
                 return count($player->getCards()) == 0;
@@ -204,10 +227,11 @@ class SkullKing
 
         $foldToResolve = new Fold($foldSortedByPlayerId, $this->fold);
         $cardInFold = $foldToResolve->resolve();
+
         if (is_null($cardInFold)) {
             return null;
         }
-        return $this->findPlayer($cardInFold->getPlayerId());
+        return $this->findPlayerById($cardInFold->getPlayerId());
 
     }
 
@@ -323,7 +347,7 @@ class SkullKing
     public function addCardInFold(Player $player, Card $card): void
     {
         $this->fold[] = array(
-            'player_id' => $player->getUserId()->toRfc4122(),
+            'player_id' => $player->getId(),
             'player_name' => $player->getName(),
             'card_type' => $card->getCardType(),
             'card_value' => $card->getValue(),
