@@ -1,52 +1,53 @@
-{% extends 'base.html.twig' %}
+{% block head %}
+    {% block stylesheets %}
+        <link rel="stylesheet" href="{{ asset('css/gameroom.css') }}">
+        <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+    {% endblock %}
 
-{% block title %}Hello GameRoomController!{% endblock %}
+{% endblock %}
+
+
 
 {% block body %}
-<style>
-    .example-wrapper {
-        margin: 1em auto;
-        max-width: 800px;
-        width: 95%;
-        font: 18px/1.5 sans-serif;
-    }
 
-    .example-wrapper code {
-        background: #F5F5F5;
-        padding: 2px 6px;
-    }
-</style>
-
-<div class="example-wrapper">
-    <h1>Salutation la piraterie</h1>
+    <h1>Salutations la piraterie</h1>
 
     <div id="container-game-room-list">
-        {{ form(form) }}
-
-        {% if isEmpty == true %}
-            <p>Il n'y a pas de salon de jeux pour le moment.</p>
-        {% endif %}
-        <ul>
-            {% for room in gameRooms %}
-                <li>{{ room.id }}
-                    {{ room.createdAt| date("Y/m/d") }}
-                    {% if (room.users| length < 6) and (room.containsCurrentUser == false) %}
-                        <form id="{{ room.id }}" action="{{ path("join_game_room", { id: room.id}) }}" method="POST">
-                            <button type="submit"> REJOINDRE</button>
-                        </form>
-                    {% endif %}
-                    {% if room.containsCurrentUser == true %}
-                        <a href="{{ path('waiting_game_room', { id: room.id }) }}">Aller dans la Salle de jeux</a>
-                    {% endif %}
-
-                </li>
-
-            {% endfor %}
-        </ul>
+        <div id="empty-game-room">
+            {{ form(form) }}
+            {% if isEmpty == true %}
+                <p>Il n'y a pas de salon de jeux pour le moment.</p>
+            {% endif %}
+        </div>
+        <div id="game-room-list">
+            <div id="game-room">
+                <ul class="game-room-cards">
+                    {% for room in gameRooms %}
+                        <li class="game-room-card">
+                            <div class="card-content">
+                                <h3>{{ room.id }}</h3>
+                                <p>{{ room.createdAt|date("Y/m/d") }}</p>
+                                {% if (room.users|length < 6) and (room.containsCurrentUser == false) %}
+                                    <form id="{{ room.id }}" action="{{ path("join_game_room", { id: room.id }) }}"
+                                          method="POST">
+                                        <button type="submit">REJOINDRE</button>
+                                    </form>
+                                {% endif %}
+                                {% if room.containsCurrentUser == true %}
+                                    <button><a href="{{ path('waiting_game_room', { id: room.id }) }}">Aller dans la
+                                            Salle de
+                                            jeux</a></button>
+                                {% endif %}
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
 
     <div class="row">
         <script src="{{ asset('js/index.js') }}"></script>
     </div>
 
-    {% endblock %}
+{% endblock %}

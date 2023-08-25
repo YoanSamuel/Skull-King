@@ -32,7 +32,7 @@ class Player
     #[ORM\JoinColumn(nullable: false)]
     private ?SkullKing $skullKing;
 
-    #[ORM\Column(name: 'score', type: 'integer')]
+    #[ORM\Column(name: 'score', type: 'decimal')]
     private int $score;
 
     public function __construct(SkullKing $skullKing, GameRoomUser $user, array $cards, ?int $announce = null, int $score = 0)
@@ -132,14 +132,9 @@ class Player
         return false;
     }
 
-    public function incrementScore(string $pointsWin): void
+    public function incrementScore(int $pointsWin): void
     {
-//        dd($pointsWin);
-        if (str_contains($pointsWin, '-')) {
-            $this->score = $this->score - (int)$pointsWin;
-        }
-
-        $this->score = $this->score + (int)$pointsWin;
+        $this->score += $pointsWin;
     }
 
 }

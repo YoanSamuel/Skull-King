@@ -1,3 +1,87 @@
-#container-game-room-list {
+* {
+    font-family: 'IM Fell English SC', serif !important;
+}
+
+h1 {
+    text-align: center;
+    font-size: 65px;
+}
+
+p {
+    font-size: 17px;
+}
+
+.game-room-cards {
     display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+#form_Jouer {
+    background-color: #f39c01;
+    width: 100px;
+    height: 50px;
+    font-size: x-large;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#form_Jouer:hover {
+    transform: scale(1.1); /* Enlarge on hover */
+}
+
+
+.game-room-card {
+    background-color: #f7f7f7;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: calc(33.33% - 50px);
+/ transition: transform 0.2 s, box-shadow 0.2 s;
+}
+
+.game-room-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.card-content {
+    text-align: center;
+}
+
+.card-content h3 {
+    margin: 0 0 10px;
+    font-size: 1.2rem;
+}
+
+.card-content p {
+    margin: 0 0 10px;
+    font-size: 0.9rem;
+}
+
+.card-content button {
+    background-color: #3498db;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.card-content button:hover {
+    transform: scale(1.1); /* Enlarge on hover */
+}
+
+.card-content a {
+    color: white;
+    text-decoration: none;
 }

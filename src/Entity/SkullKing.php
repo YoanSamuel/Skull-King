@@ -35,7 +35,7 @@ class SkullKing
     private ?int $firstPlayerId;
 
     #[ORM\Column(type: 'string', nullable: true)]
-    private ?string $colorAsked = null;
+    private ?string $colorAsked;
 
     #[ORM\Column(name: 'jsonCards', type: 'json', nullable: true)]
     private array $fold = [];
@@ -65,6 +65,7 @@ class SkullKing
             $this->players->add(new Player($this, $user, $deck->distribute($this->nbRound), null));
 
         }
+        $this->colorAsked = null;
         $this->firstPlayerId = $this->getPlayers()[0]->getId();
         $this->currentPlayerId = $this->firstPlayerId;
         $this->fold = [];
@@ -168,13 +169,18 @@ class SkullKing
         if (is_null($card)) {
             throw new Exception('Tu ne peux pas jouer une carte que tu ne possèdes pas , ' . $player->getName() . '!');
         }
-
         $isCardPlayedColored = $card->getCardType() == CardType::COLORED->value;
+
+        if ($isCardPlayedColored && $this->colorAsked === null) {
+            $this->colorAsked = $card->getColor();
+        }
+
         $isColorAsked = !is_null($this->colorAsked);
         $isCardPlayedSameColor = $card->getColor() == $this->colorAsked;
+        $isSpecialCard = $card->getCardType() != CardType::COLORED->value;
         $hasTheColorAsked = $player->hasTheColorAsked($this->colorAsked);
-
-        if ($isColorAsked && $isCardPlayedColored && !$isCardPlayedSameColor && !$hasTheColorAsked) {
+//        dd($this->colorAsked, $isColorAsked, $isCardPlayedColored, !$isCardPlayedSameColor, $hasTheColorAsked, !$isSpecialCard);
+        if ($isColorAsked && $isCardPlayedColored && !$isCardPlayedSameColor && $hasTheColorAsked && !$isSpecialCard) {
             throw new Exception('Tu TRICHEEEEEEEEEEEEEEEEEEEEES ' . $player->getName() . '!');
         }
 
@@ -205,8 +211,8 @@ class SkullKing
 
                 $roundFoldResult->incrementFoldDone($winner);
             }
+            $this->colorAsked = null;
             $this->fold = [];
-
 
             $everyPlayersHasEmptyHand = $this->players->forAll(function (int $key, Player $player) {
                 return count($player->getCards()) == 0;
@@ -215,27 +221,25 @@ class SkullKing
             if ($everyPlayersHasEmptyHand) {
 
                 /** @var FoldResult $foldResult */
-                foreach ($this->foldResults as $foldResult) {
-                    $playerAnnounces = $foldResult->getPlayerAnnounces();
-                    /** @var PlayerAnnounce $playerAnnounce */
+                $foldResult = $this->foldResults->last();
+                $playerAnnounces = $foldResult->getPlayerAnnounces();
+                foreach ($playerAnnounces as $playerAnnounce) {
 
-                    foreach ($playerAnnounces as $playerAnnounce) {
-
-                        $player = $this->findPlayerById($playerAnnounce->getPlayerId());
-                        $announce = $playerAnnounce->getAnnounced();
-                        $done = $playerAnnounce->getDone();
-//                        dd($playerAnnounce);
-                        if ($announce === 0 && $done === 0) {
-                            $scoreChange = $this->getNbRound() * 10;
-                        } elseif ($announce === $done) {
-                            $scoreChange = $announce * 20;
-                        } else {
-                            $scoreChange = (string)-(10 * (int)($announce - $done));
-                        }
-
-                        $player->incrementScore($scoreChange);
+                    $player = $this->findPlayerById($playerAnnounce->getPlayerId());
+                    $announce = $playerAnnounce->getAnnounced();
+                    $done = $playerAnnounce->getDone();
+                    //                        dd($playerAnnounce);
+                    if ($announce === 0 && $done === 0) {
+                        $scoreChange = $this->getNbRound() * 10;
+                    } elseif ($announce === $done) {
+                        $scoreChange = $announce * 20;
+                    } else {
+                        $announce < $done ? $scoreChange = -10 * ($done - $announce) : $scoreChange = -10 * ($announce - $done);
                     }
+
+                    $player->incrementScore($scoreChange);
                 }
+
                 $this->prepareNextRound();
             }
 

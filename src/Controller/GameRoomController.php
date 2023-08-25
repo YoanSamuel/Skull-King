@@ -37,7 +37,7 @@ class GameRoomController extends AbstractController
     {
 
         $form = $this->createFormBuilder(null, ["method" => "POST"])
-            ->add('new', SubmitType::class)
+            ->add('Jouer', SubmitType::class)
             ->getForm();
 
         $allRooms = $this->gameRoomRepository->findAllWithUsers();

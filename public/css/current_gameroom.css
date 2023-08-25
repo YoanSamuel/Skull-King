@@ -1,0 +1,49 @@
+* {
+    font-family: 'IM Fell English SC', serif !important;
+}
+
+.example-wrapper {
+    margin: 1em auto;
+    max-width: 800px;
+    width: 95%;
+    font: 18px/1.5 sans-serif;
+}
+
+.example-wrapper a {
+    text-decoration: none;
+    color: #333;
+}
+
+#back-gameroom-list {
+    background-color: #f39c12;
+    width: 150px;
+    height: 50px;
+    font-size: 0.8rem;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#back-gameroom-list :hover {
+    transform: scale(1.1); /* Enlarge on hover */
+}
+
+.form_start {
+    background-color: #f39c12;
+    width: 150px;
+    height: 50px;
+    font-size: 1.5rem;
+    color: white;
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.form_start:hover {
+    transform: scale(1.1); /* Enlarge on hover */
+}

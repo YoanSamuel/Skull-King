@@ -34,7 +34,7 @@ class PlayerAnnounce
 
     public function incrementDone(): void
     {
-        $this->done = $this->done + 1;
+        $this->done += 1;
     }
 
     public function getId(): ?int

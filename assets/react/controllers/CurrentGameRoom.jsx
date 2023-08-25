@@ -1,6 +1,9 @@
 import React, {useEffect, useState} from 'react';
+import './styles/current_gameroom.css';
+
 
 export default function ({users, skullkingid, pathEnterGameRoom, pathCurrentGame, eventSourceUrl}) {
+
     const [usersState, setUsersState] = useState(users);
 
     useEffect(() => {
@@ -21,7 +24,7 @@ export default function ({users, skullkingid, pathEnterGameRoom, pathCurrentGame
         }
     }, [])
 
-    return <div>
+    return <div class="players-list">
         <ul>
 
             {usersState.map((user) => {
@@ -38,10 +41,9 @@ export default function ({users, skullkingid, pathEnterGameRoom, pathCurrentGame
                     ? <form action={pathEnterGameRoom} method="POST">
                         <button type="submit"> Démarrer la partie</button>
                     </form>
-                    : <a href={pathCurrentGame}>Rejoindre la partie en cours</a>)
+                    : <button><a href={pathCurrentGame}>Rejoindre la partie en cours</a></button>)
                 : undefined
         }
 
     </div>;
 }
-

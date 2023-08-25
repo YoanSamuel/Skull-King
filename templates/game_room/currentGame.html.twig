@@ -1,25 +1,17 @@
 {% extends 'base.html.twig' %}
 
+{% block head %}
+    <link rel="stylesheet" href="{{ asset('css/current_gameroom.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+{% endblock %}
+
 {% block title %}Hello GameRoomController!{% endblock %}
 
 {% block body %}
-    <style>
-        .example-wrapper {
-            margin: 1em auto;
-            max-width: 800px;
-            width: 95%;
-            font: 18px/1.5 sans-serif;
-        }
-
-        .example-wrapper code {
-            background: #F5F5F5;
-            padding: 2px 6px;
-        }
-    </style>
 
     <div class="example-wrapper">
 
-    <a href="{{ path('app_game_room') }}">Retourner à l'accueil</a>
+    <button id="back-gameroom-list"><a href="{{ path('app_game_room') }}">Retourner à l'accueil</a></button>
 
     <div {{ react_component('CurrentGameRoom', {
         'users': users,

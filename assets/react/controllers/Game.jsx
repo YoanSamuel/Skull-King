@@ -82,8 +82,7 @@ export default function ({
                 return <div key={player.id}>
                     <p>{player.name}</p>
                     <p>{player.id}</p>
-                    <p>Score : {player.score}</p>
-                    <p>{displayPlayerAnnounce(player)}</p>
+                    <p>Annonce: {displayPlayerAnnounce(player)}</p>
                 </div>
             })
         }
