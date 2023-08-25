@@ -91,7 +91,3 @@ class Fold
         });
     }
 }
-
-// objectif demain matin ordonner la fold, gagnant de la pli doit devenir nouveau premier joeuur
-// a chaque pli gagné mettre a jour les scores.
-//rajouter temps ou a ete pose la carte a ete jouée

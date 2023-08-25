@@ -3,7 +3,6 @@
 namespace App\Entity;
 
 
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -33,7 +32,10 @@ class Player
     #[ORM\JoinColumn(nullable: false)]
     private ?SkullKing $skullKing;
 
-    public function __construct(SkullKing $skullKing, GameRoomUser $user, array $cards, ?int $announce = null)
+    #[ORM\Column(name: 'score', type: 'integer')]
+    private int $score;
+
+    public function __construct(SkullKing $skullKing, GameRoomUser $user, array $cards, ?int $announce = null, int $score = 0)
     {
 
         $this->userId = $user->getUserId();
@@ -43,6 +45,7 @@ class Player
         }
         $this->announce = $announce;
         $this->skullKing = $skullKing;
+        $this->score = $score;
     }
 
     public function getId(): ?int
@@ -63,7 +66,7 @@ class Player
         return null;
     }
 
-    public function setCards(array $cards) : void
+    public function setCards(array $cards): void
     {
         $this->cards = $cards;
     }
@@ -116,17 +119,27 @@ class Player
 
     public function hasTheColorAsked(?string $colorAsked): bool
     {
-        if(is_null($colorAsked)) {
+        if (is_null($colorAsked)) {
             return false;
         }
 
-        foreach($this->cards as $cardId) {
+        foreach ($this->cards as $cardId) {
             $card = Card::create($cardId);
-            if($card->getColor() == $colorAsked) {
+            if ($card->getColor() == $colorAsked) {
                 return true;
             }
         }
         return false;
+    }
+
+    public function incrementScore(string $pointsWin): void
+    {
+//        dd($pointsWin);
+        if (str_contains($pointsWin, '-')) {
+            $this->score = $this->score - (int)$pointsWin;
+        }
+
+        $this->score = $this->score + (int)$pointsWin;
     }
 
 }

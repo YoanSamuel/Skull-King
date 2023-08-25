@@ -8,13 +8,14 @@ export default function ({
                              gameId,
                              eventSourceUrl,
                              playerId,
-                             skull,
-                             fold
+                             skull
                          }) {
 
     const [playersState, setPlayersState] = useState(players);
     const [gamePhaseState, setGamePhaseState] = useState(gamePhase);
     const [skullState, setSkullState] = useState(skull);
+    const [foldData, setFoldData] = useState([]);
+    const [playersPlayed, setPlayersPlayed] = useState([]);
 
     useEffect(() => {
         const eventSource = new EventSource(eventSourceUrl);
@@ -30,6 +31,7 @@ export default function ({
                             return {
                                 ...player,
                                 announce: parseInt(data.announce),
+                                score: data.score,
                             }
                         }
 
@@ -41,25 +43,32 @@ export default function ({
             }
 
             if (data.status === 'player_play_card') {
-                setSkullState(data.skull)
+                setSkullState(data.skull);
+                setPlayersPlayed((prevPlayersPlayed) => {
+                    if (!prevPlayersPlayed.includes(data.userId)) {
+                        return [...prevPlayersPlayed, data.userId];
+                    }
+                    return prevPlayersPlayed;
+                });
+
+                setFoldData(data.fold); // Update fold data
 
             }
-        }
+        };
     }, [])
 
 
     function displayPlayerAnnounce(player) {
         if (!player.announce && player.announce !== 0) {
-
             return 'En attente...';
         }
 
         if (player.userId === playerId) {
-            return player.announce;
+            return `Annonce : ${player.announce}, Score : ${player.score}`;
         }
 
         if (gamePhaseState !== 'ANNOUNCE') {
-            return player.announce;
+            return `Annonce : ${player.announce}, Score : ${player.score}`;
         }
 
         return 'A voté, en attente des autres joueurs.';
@@ -72,7 +81,9 @@ export default function ({
             playersState.map((player) => {
                 return <div key={player.id}>
                     <p>{player.name}</p>
-                    <p>annonce: {displayPlayerAnnounce(player)}</p>
+                    <p>{player.id}</p>
+                    <p>Score : {player.score}</p>
+                    <p>{displayPlayerAnnounce(player)}</p>
                 </div>
             })
         }
@@ -85,26 +96,29 @@ export default function ({
 
         }
         <p> Votre main : </p>
-
-        {cards.map((card, index) => {
-            return (gamePhaseState === 'PLAYCARD') ?
-                <form key={`${card.id}_${index}`} action={`/game/${gameId}/player/${playerId}/playcard/${card.id}`}
-                      method="POST">
-                    <button type="submit"> {card.id}</button>
-                </form>
-                : <span key={`${card.id}_${index}`}>{card.id} </span>
-        })
-        }
-
-        <h2>LA FOLD DE SES MORTS </h2>
-        {/*<  <ul>*/}
-        {/*      {skullState[0].fold.map((card) => (*/}
-        {/*          <li key={card.id}>*/}
-        {/*              {card.cardType}*/}
-        {/*          </li>*/}
-        {/*      ))}*/}
-        {/*  </ul>>*/}
-
+        <div id="player_hand">
+            {cards.map((card, index) => {
+                return (gamePhaseState === 'PLAYCARD') ?
+                    <form key={`${card.id}_${index}`} action={`/game/${gameId}/player/${playerId}/playcard/${card.id}`}
+                          method="POST">
+                        <button type="submit"> {card.id}</button>
+                    </form>
+                    : <span key={`${card.id}_${index}`}>{card.id} </span>
+            })
+            }
+        </div>
+        <div>
+            <h2>LA FOLD DE SES MORTS</h2>
+            <ul>
+                {foldData.map((card) => {
+                    return (
+                        <li key={card.card_id}>
+                            {card.player_name}: {card.card_id}
+                        </li>
+                    );
+                })}
+            </ul>
+        </div>
 
     </div>
 

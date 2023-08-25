@@ -7,12 +7,12 @@ use App\Controller\dto\PlayerDTO;
 use App\Controller\dto\SkullDTO;
 use App\Entity\Card;
 use App\Entity\Player;
-use App\Repository\CardRepository;
+use App\Entity\SkullKing;
+use App\Repository\PlayerRepository;
 use App\Repository\SkullKingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
-use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -28,20 +28,19 @@ class SkullKingController extends AbstractController
     private SkullKingRepository $skullKingRepo;
     private HubInterface $hub;
     private EntityManagerInterface $em;
-    private CardRepository $cardRepo;
-    private LoggerInterface $logger;
+    private PlayerRepository $playerRepository;
+
 
     public function __construct(SkullKingRepository    $skullKingRepo,
                                 HubInterface           $hub,
                                 EntityManagerInterface $em,
-                                CardRepository         $cardRepo,
-                                LoggerInterface        $logger)
+                                PlayerRepository       $playerRepository,)
     {
         $this->skullKingRepo = $skullKingRepo;
         $this->hub = $hub;
         $this->em = $em;
-        $this->cardRepo = $cardRepo;
-        $this->logger = $logger;
+        $this->playerRepository = $playerRepository;
+
     }
 
 
@@ -79,7 +78,6 @@ class SkullKingController extends AbstractController
             'playerId' => $userId,
             'version' => $skull->getVersion(),
         ];
-
         return $this->render('game/index.html.twig', $skullData);
     }
 
@@ -126,14 +124,19 @@ class SkullKingController extends AbstractController
     #[Route('/game/{id}/player/{playerId}/playcard/{cardId}', name: 'play_card', methods: ["POST"])]
     public function playCard($id, $cardId, $playerId, Request $request): Response
     {
+        /** @var SkullKing $skull */
         $skull = $this->skullKingRepo->find($id);
         try {
             $userId = new Uuid($request->cookies->get('userid'));
             $skull->playCard($userId, $cardId);
             $fold = $skull->getFold();
+            $playersArray = $skull->getPlayers()->toArray();
+            foreach ($playersArray as $player) {
+                $playerToUpdate = $this->playerRepository->find($player->getId());
+                $this->playerRepository->save($playerToUpdate);
+            }
             $this->skullKingRepo->save($skull, true);
             $topicName = "game_topic_$id";
-
             $this->hub->publish(new Update(
                 $topicName, json_encode([
                 'status' => 'player_play_card',
@@ -143,6 +146,7 @@ class SkullKingController extends AbstractController
                 'gamePhase' => $skull->getState(),
 
             ])));
+
 
             return $this->redirectToRoute('current_game', ['id' => $id]);
 

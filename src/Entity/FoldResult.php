@@ -19,7 +19,7 @@ class FoldResult
     #[ORM\Column(type: 'integer')]
     private int $nbRound;
 
-    #[ORM\OneToMany(mappedBy: 'foldResult', targetEntity: PlayerAnnounce::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'foldResult', targetEntity: PlayerAnnounce::class, cascade: ['persist', 'remove'], fetch: "EAGER", orphanRemoval: true)]
     private Collection $playerAnnounces;
 
 
@@ -56,7 +56,6 @@ class FoldResult
         $winnerPlayerAnnounce = $this->getPlayerAnnounces()->findFirst(function (int $key, PlayerAnnounce $playerAnnounce) use ($winner) {
             return $winner->getId() == $playerAnnounce->getPlayerId();
         });
-        
         $winnerPlayerAnnounce->incrementDone();
     }
 

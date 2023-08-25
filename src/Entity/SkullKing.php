@@ -31,6 +31,9 @@ class SkullKing
     #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $currentPlayerId;
 
+    #[ORM\Column(type: 'integer', nullable: true)]
+    private ?int $firstPlayerId;
+
     #[ORM\Column(type: 'string', nullable: true)]
     private ?string $colorAsked = null;
 
@@ -43,7 +46,7 @@ class SkullKing
     #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: Player::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $players;
 
-    #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: FoldResult::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: FoldResult::class, cascade: ['persist', 'remove'], fetch: "EAGER", orphanRemoval: true)]
     private Collection $foldResults;
 
     /**
@@ -62,6 +65,8 @@ class SkullKing
             $this->players->add(new Player($this, $user, $deck->distribute($this->nbRound), null));
 
         }
+        $this->firstPlayerId = $this->getPlayers()[0]->getId();
+        $this->currentPlayerId = $this->firstPlayerId;
         $this->fold = [];
         $this->state = SkullKingPhase::ANNOUNCE->value;
         $this->foldResults = new ArrayCollection();
@@ -91,8 +96,12 @@ class SkullKing
         if ($count == count($this->players)) {
             $this->state = SkullKingPhase::PLAYCARD->value;
             $sortedPlayers = $this->getPlayersSortedById();
-            $this->currentPlayerId = $sortedPlayers[0]->getId();
             $this->foldResults->add(FoldResult::announce($this));
+            if ($this->nbRound == 1) {
+
+                $this->currentPlayerId = $sortedPlayers[0]->getId();
+                $this->firstPlayerId = $this->currentPlayerId;
+            }
         }
     }
 
@@ -142,7 +151,6 @@ class SkullKing
 
         $player = $this->findPlayerByUserId($userId);
 
-
         if (is_null($player)) {
             throw new Exception('Ce joueur nexiste pas Billy!');
         }
@@ -150,6 +158,7 @@ class SkullKing
         if ($this->hasAlReadyPlayed($player)) {
             throw new Exception('Tu ne peux pas jouer deux fois dans le même tour!');
         }
+
 
         if ($player->getId() !== $this->currentPlayerId) {
             throw new Exception('Ce n\'est pas à toi de jouer, ' . $player->getName() . '!');
@@ -181,17 +190,19 @@ class SkullKing
         if ($allPlayersPlayed) {
 
             $winner = $this->resolveFold();
+
             if (!is_null($winner)) {
 
                 $this->currentPlayerId = $winner->getId();
 
-                // rename en roundResult le fold fooldresult
+                // rename en roundResult le fold foldresult
                 /**
                  * @var FoldResult $roundFoldResult
                  */
                 $roundFoldResult = $this->foldResults->findFirst(function (int $key, FoldResult $foldResult) {
                     return $this->nbRound == $foldResult->getNbRound();
                 });
+
                 $roundFoldResult->incrementFoldDone($winner);
             }
             $this->fold = [];
@@ -202,6 +213,29 @@ class SkullKing
             });
 
             if ($everyPlayersHasEmptyHand) {
+
+                /** @var FoldResult $foldResult */
+                foreach ($this->foldResults as $foldResult) {
+                    $playerAnnounces = $foldResult->getPlayerAnnounces();
+                    /** @var PlayerAnnounce $playerAnnounce */
+
+                    foreach ($playerAnnounces as $playerAnnounce) {
+
+                        $player = $this->findPlayerById($playerAnnounce->getPlayerId());
+                        $announce = $playerAnnounce->getAnnounced();
+                        $done = $playerAnnounce->getDone();
+//                        dd($playerAnnounce);
+                        if ($announce === 0 && $done === 0) {
+                            $scoreChange = $this->getNbRound() * 10;
+                        } elseif ($announce === $done) {
+                            $scoreChange = $announce * 20;
+                        } else {
+                            $scoreChange = (string)-(10 * (int)($announce - $done));
+                        }
+
+                        $player->incrementScore($scoreChange);
+                    }
+                }
                 $this->prepareNextRound();
             }
 
@@ -209,6 +243,7 @@ class SkullKing
         return $this->fold;
 
     }
+
 
     public function hasAlReadyPlayed(Player $player): bool
     {
@@ -224,13 +259,13 @@ class SkullKing
     public function resolveFold(): ?Player
     {
         $foldSortedByPlayerId = $this->getSortedFoldByPlayerId();
-
         $foldToResolve = new Fold($foldSortedByPlayerId, $this->fold);
-        $cardInFold = $foldToResolve->resolve();
 
+        $cardInFold = $foldToResolve->resolve();
         if (is_null($cardInFold)) {
             return null;
         }
+
         return $this->findPlayerById($cardInFold->getPlayerId());
 
     }
@@ -302,6 +337,7 @@ class SkullKing
         // creer fonction resolve_score
 
         $this->nbRound += 1;
+
         $this->state = SkullKingPhase::ANNOUNCE->value;
         $deck = new Deck();
         $deck->shuffle();
@@ -316,7 +352,16 @@ class SkullKing
 
         }
 
+        $this->firstPlayerId = $this->nextPlayerId($this->firstPlayerId);
+        $this->currentPlayerId = $this->firstPlayerId;
+
     }
+
+    public function updateFirstPlayerId(): void
+    {
+        $this->setFirstPlayerId($this->nextPlayerId($this->firstPlayerId));
+    }
+
 
     private function nextPlayerId(int $targetPlayerId): int
     {
@@ -363,15 +408,40 @@ class SkullKing
      */
     public function getSortedFoldByPlayerId(): array
     {
-        $id = $this->currentPlayerId;
-        $foldSortedByPlayerId = [$this->currentPlayerId];
+        $id = null;
+        $foldSortedByPlayerId = [];
         while ($id != $this->currentPlayerId) {
-
-            $id = $this->nextPlayerId($id);
-            $foldSortedByPlayerId[] = $id;
+            $foldSortedByPlayerId[] = $id == null ? $this->currentPlayerId : $id;
+            $id = $this->nextPlayerId($id == null ? $this->currentPlayerId : $id);
         }
         return $foldSortedByPlayerId;
+
     }
 
+// first player id a set et ajouter en base de donnés et sort de la fold en fonction du first player id et no du current player id
+    public function getFoldResults(): Collection
+    {
+        return $this->foldResults;
+    }
+
+    public function setFoldResults(Collection $foldResults): void
+    {
+        $this->foldResults = $foldResults;
+    }
+
+    public function getFirstPlayerId(): ?int
+    {
+        return $this->firstPlayerId;
+    }
+
+    public function setFirstPlayerId(?int $firstPlayerId): void
+    {
+        $this->firstPlayerId = $firstPlayerId;
+    }
+
+    private function setNbRound(int $nbRound)
+    {
+        $this->nbRound = $nbRound;
+    }
 
 }

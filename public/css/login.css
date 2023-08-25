@@ -1,0 +1,53 @@
+body {
+    background-color: #5eb5e0;
+}
+
+#container-title {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 204px;
+}
+
+#login-title {
+    text-align: center;
+    font-size: xxx-large;
+}
+
+#container-form {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 204px;
+}
+
+#form {
+    display: flex;
+    align-items: center;
+}
+
+#form_Nom {
+    padding: 10px;
+    border-radius: 5px;
+}
+
+#form_Entrer {
+    background-color: #f39c01;
+    color: white;
+    margin: 20px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+#form_Entrer:hover {
+    background-color: #f39c12;
+    transform: scale(1.05);
+}
+
+label {
+    margin: 10px;
+}
