@@ -14,7 +14,7 @@ class FoldResult
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id;
+    private ?int $id = null;
 
     #[ORM\Column(type: 'integer')]
     private int $nbRound;
@@ -33,6 +33,7 @@ class FoldResult
         $foldResult->setSkullKing($skullKing);
         $players = $skullKing->getPlayers();
         $playersAnnounces = new ArrayCollection();
+        /** @var Player $player */
         foreach ($players as $player) {
 
             $announce = new PlayerAnnounce(

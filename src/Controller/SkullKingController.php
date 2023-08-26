@@ -10,8 +10,6 @@ use App\Entity\Player;
 use App\Entity\SkullKing;
 use App\Repository\PlayerRepository;
 use App\Repository\SkullKingRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -27,18 +25,15 @@ class SkullKingController extends AbstractController
 
     private SkullKingRepository $skullKingRepo;
     private HubInterface $hub;
-    private EntityManagerInterface $em;
     private PlayerRepository $playerRepository;
 
 
-    public function __construct(SkullKingRepository    $skullKingRepo,
-                                HubInterface           $hub,
-                                EntityManagerInterface $em,
-                                PlayerRepository       $playerRepository,)
+    public function __construct(SkullKingRepository $skullKingRepo,
+                                HubInterface        $hub,
+                                PlayerRepository    $playerRepository)
     {
         $this->skullKingRepo = $skullKingRepo;
         $this->hub = $hub;
-        $this->em = $em;
         $this->playerRepository = $playerRepository;
 
     }
@@ -78,6 +73,7 @@ class SkullKingController extends AbstractController
             'playerId' => $userId,
             'version' => $skull->getVersion(),
         ];
+//        $this->skullKingRepo->save($skull, true);
         return $this->render('game/index.html.twig', $skullData);
     }
 
@@ -119,7 +115,6 @@ class SkullKingController extends AbstractController
 
     /**
      * @throws OptimisticLockException
-     * @throws ORMException
      */
     #[Route('/game/{id}/player/{playerId}/playcard/{cardId}', name: 'play_card', methods: ["POST"])]
     public function playCard($id, $cardId, $playerId, Request $request): Response

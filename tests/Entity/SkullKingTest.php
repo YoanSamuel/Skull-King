@@ -57,8 +57,15 @@ class SkullKingTest extends TestCase
         $secondGameRoomUser = $this->createAGameRoomUser();
         $game = new SkullKing(new ArrayCollection([$firstGameRoomUser, $secondGameRoomUser]));
 
-        $game->announce($firstGameRoomUser->getUserId(), 1);
-        $game->announce($secondGameRoomUser->getUserId(), 0);
+        /** @var Player $playerOne */
+        $playerOne = $game->getPlayers()[0];
+        $playerOne->setId(1);
+        /** @var Player $playerTwo */
+        $playerTwo = $game->getPlayers()[1];
+        $playerTwo->setId(2);
+
+        $game->announce($playerOne->getUserId(), 1);
+        $game->announce($playerTwo->getUserId(), 0);
 
         $this->assertEquals(1, $game->getPlayers()[0]->getAnnounce());
         $this->assertEquals(0, $game->getPlayers()[1]->getAnnounce());
@@ -88,7 +95,8 @@ class SkullKingTest extends TestCase
         $game->playCard($firstGameRoomUser->getUserId(), $card->getId());
         $this->assertCount(1, $game->getFold());
         $this->assertEquals([array(
-            'player_id' => $playerOne->getUserId()->toRfc4122(),
+            'player_id' => $playerOne->getId(),
+            'player_userid' => $playerOne->getUserId(),
             'player_name' => $playerOne->getName(),
             'card_type' => $card->getCardType(),
             'card_value' => $card->getValue(),

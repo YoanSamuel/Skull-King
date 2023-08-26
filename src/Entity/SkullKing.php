@@ -397,6 +397,7 @@ class SkullKing
     {
         $this->fold[] = array(
             'player_id' => $player->getId(),
+            'player_userid' => $player->getUserId()->toRfc4122(),
             'player_name' => $player->getName(),
             'card_type' => $card->getCardType(),
             'card_value' => $card->getValue(),
@@ -441,11 +442,6 @@ class SkullKing
     public function setFirstPlayerId(?int $firstPlayerId): void
     {
         $this->firstPlayerId = $firstPlayerId;
-    }
-
-    private function setNbRound(int $nbRound)
-    {
-        $this->nbRound = $nbRound;
     }
 
 }

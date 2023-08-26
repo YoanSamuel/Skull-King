@@ -8,6 +8,7 @@ use App\Entity\GameRoom;
 use App\Entity\GameRoomUser;
 use App\Entity\SkullKing;
 use App\Repository\GameRoomRepository;
+use App\Repository\SkullKingRepository;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -23,11 +24,14 @@ class GameRoomController extends AbstractController
 
     private GameRoomRepository $gameRoomRepository;
     private HubInterface $hub;
+    private SkullKingRepository $skullRepository;
 
-    public function __construct(GameRoomRepository $gameRoomRepository,
-                                HubInterface       $hub)
+    public function __construct(GameRoomRepository  $gameRoomRepository,
+                                SkullKingRepository $skullRepository,
+                                HubInterface        $hub)
     {
         $this->gameRoomRepository = $gameRoomRepository;
+        $this->skullRepository = $skullRepository;
         $this->hub = $hub;
 
     }
@@ -121,7 +125,7 @@ class GameRoomController extends AbstractController
      * @throws \Exception
      */
     #[Route('/game/room/{id}/game', name: 'enter_in_game', methods: ["POST"])]
-    public function enterInGame($id)
+    public function enterInGame(Request $request, $id)
     {
         $gameRoom = $this->gameRoomRepository->findOneBy(['id' => $id]);
         $users = $gameRoom->getUsers();
@@ -130,11 +134,11 @@ class GameRoomController extends AbstractController
         $skull = new SkullKing($users, $deck);
         $skull->setCreatedAt(new DateTimeImmutable());
 
-
         $gameRoom->setSkullKing($skull);
-        $this->gameRoomRepository->save($gameRoom, true);
 
+        $this->skullRepository->save($skull, true);
         $response = $this->redirectToRoute('current_game', ['id' => $skull->getId()]);
+        $this->gameRoomRepository->save($gameRoom, true);
         $topicName = "game_room_topic_$id";
         $this->hub->publish(new Update(
             $topicName, json_encode([

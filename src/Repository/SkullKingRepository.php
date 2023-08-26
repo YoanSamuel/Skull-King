@@ -33,6 +33,7 @@ class SkullKingRepository extends ServiceEntityRepository
     {
         $this->getEntityManager()->remove($entity);
 
+    
         if ($flush) {
             $this->getEntityManager()->flush();
         }
@@ -72,6 +73,7 @@ class SkullKingRepository extends ServiceEntityRepository
     {
         return $this->serializer->deserialize($json, SkullKing::class, 'json');
     }
+
     public function findAllWithUsers(): array
     {
         return $this->createQueryBuilder('gr')->addSelect(['gru'])

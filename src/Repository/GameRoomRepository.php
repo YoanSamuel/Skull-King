@@ -24,7 +24,6 @@ class GameRoomRepository extends ServiceEntityRepository
     public function save(GameRoom $entity, bool $flush = false): void
     {
         $this->getEntityManager()->persist($entity);
-
         if ($flush) {
             $this->getEntityManager()->flush();
         }
