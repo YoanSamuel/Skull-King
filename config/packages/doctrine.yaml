@@ -18,6 +18,10 @@ doctrine:
         prefix: 'App\Entity'
         alias: App
 
+when@test:
+  doctrine:
+    dbal:
+      url: "postgresql://app:!ChangeMe!@%env(resolve:POSTGRES_HOST)%:5432/app?serverVersion=15&charset=utf8"
 
 
 when@prod:

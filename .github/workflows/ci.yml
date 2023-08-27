@@ -15,7 +15,6 @@ jobs:
           POSTGRES_DB: app
           POSTGRES_PASSWORD: "!ChangeMe!"
           POSTGRES_USER: app
-
         options: >-
           --health-cmd pg_isready
           --health-interval 10s
@@ -42,6 +41,8 @@ jobs:
 
       - name: Run tests
         run: ./vendor/bin/phpunit
+        env:
+          POSTGRES_HOST: postgres
 
       - name: Use Node.js 16.x
         uses: actions/setup-node@v3
