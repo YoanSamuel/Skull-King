@@ -116,8 +116,6 @@ class SkullKingTest extends TestCase
         $this->assertEquals(SkullKingPhase::ANNOUNCE->value, $game->getState());
         $this->assertEquals(2, $game->getNbRound());
 
-        print 'toto';
-
     }
 
     public function createAGameRoomUser(): GameRoomUser

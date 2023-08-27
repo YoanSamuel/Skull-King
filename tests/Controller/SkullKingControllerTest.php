@@ -23,6 +23,7 @@ class SkullKingControllerTest extends WebTestCase
 
         $response = $bill->getResponse();
         $redirectLocation = $response->headers->get('location');
+        print $response;
         $this->assertEquals(302, $response->getStatusCode());
 
         $jean->request('POST', $redirectLocation);
