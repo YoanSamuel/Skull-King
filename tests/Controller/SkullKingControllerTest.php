@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use App\Repository\SkullKingRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\BrowserKit\Cookie;
