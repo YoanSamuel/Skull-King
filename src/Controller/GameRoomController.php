@@ -136,9 +136,9 @@ class GameRoomController extends AbstractController
 
         $gameRoom->setSkullKing($skull);
 
-        $this->skullRepository->save($skull, true);
-        $response = $this->redirectToRoute('current_game', ['id' => $skull->getId()]);
+//        $this->skullRepository->save($skull, true);
         $this->gameRoomRepository->save($gameRoom, true);
+        $response = $this->redirectToRoute('current_game', ['id' => $skull->getId()]);
         $topicName = "game_room_topic_$id";
         $this->hub->publish(new Update(
             $topicName, json_encode([
