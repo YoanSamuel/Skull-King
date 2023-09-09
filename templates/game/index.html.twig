@@ -15,11 +15,7 @@
 
 
     <div {{ react_component('Game', {
-        'fold': fold,
-        'gamePhase': gamePhase ,
         'cards': cards,
-        'gameId': id,
-        'players': players,
         'announceValues' :  announceValues,
         'eventSourceUrl': mercure(topicName, { subscribe: topicName }),
         'playerId': playerId,

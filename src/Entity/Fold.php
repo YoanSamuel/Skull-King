@@ -23,6 +23,11 @@ class Fold
         }
     }
 
+    public function getFold(): Collection
+    {
+        return $this->fold;
+    }
+
 
     public function resolve(): ?CardInFold
     {

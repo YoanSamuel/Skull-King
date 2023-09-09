@@ -139,15 +139,16 @@ class SkullKing
     }
 
 
-    public function getFold(): array
+    public function getFold(): Fold
     {
-        return $this->fold;
+        $foldSortedByPlayerId = $this->getSortedFoldByPlayerId();
+        return new Fold($foldSortedByPlayerId, $this->fold);
     }
 
     /**
      * @throws Exception
      */
-    public function playCard(Uuid $userId, string $cardId): array
+    public function playCard(Uuid $userId, string $cardId): Player
     {
 
         $player = $this->findPlayerByUserId($userId);
@@ -244,7 +245,7 @@ class SkullKing
             }
 
         }
-        return $this->fold;
+        return $player;
 
     }
 
@@ -260,12 +261,12 @@ class SkullKing
         return false;
     }
 
+
     public function resolveFold(): ?Player
     {
-        $foldSortedByPlayerId = $this->getSortedFoldByPlayerId();
-        $foldToResolve = new Fold($foldSortedByPlayerId, $this->fold);
 
-        $cardInFold = $foldToResolve->resolve();
+
+        $cardInFold = $this->getFold()->resolve();
         if (is_null($cardInFold)) {
             return null;
         }
@@ -408,6 +409,7 @@ class SkullKing
         );
     }
 
+
     /**
      * @return int[]|null[]
      */
@@ -415,9 +417,9 @@ class SkullKing
     {
         $id = null;
         $foldSortedByPlayerId = [];
-        while ($id != $this->currentPlayerId) {
-            $foldSortedByPlayerId[] = $id == null ? $this->currentPlayerId : $id;
-            $id = $this->nextPlayerId($id == null ? $this->currentPlayerId : $id);
+        while ($id != $this->firstPlayerId) {
+            $foldSortedByPlayerId[] = $id == null ? $this->firstPlayerId : $id;
+            $id = $this->nextPlayerId($id == null ? $this->firstPlayerId : $id);
         }
         return $foldSortedByPlayerId;
 

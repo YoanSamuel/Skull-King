@@ -3,6 +3,7 @@
 namespace App\Tests\Entity;
 
 use App\Entity\Card;
+use App\Entity\CardInFold;
 use App\Entity\Deck;
 use App\Entity\GameRoomUser;
 use App\Entity\Player;
@@ -93,26 +94,16 @@ class SkullKingTest extends TestCase
         $card = Card::create($playerOne->getCards()[0]);
 
         $game->playCard($firstGameRoomUser->getUserId(), $card->getId());
-        $this->assertCount(1, $game->getFold());
-        $this->assertEquals([array(
-            'player_id' => $playerOne->getId(),
-            'player_userid' => $playerOne->getUserId(),
-            'player_name' => $playerOne->getName(),
-            'card_type' => $card->getCardType(),
-            'card_value' => $card->getValue(),
-            'card_pirate' => $card->getPirateName(),
-            'card_color' => $card->getColor(),
-            'card_id' => $card->getId(),
-            'card_mermaid' => $card->getMermaidName(),
-        )], $game->getFold());
+        $this->assertCount(1, $game->getFold()->getFold());
+        $this->assertEquals(new ArrayCollection([new CardInFold($card->getId(), $playerOne->getId())]), $game->getFold()->getFold());
 
         $this->assertEquals($playerTwo->getId(), $game->getCurrentPlayerId());
 
         $this->assertEmpty($playerOne->getCards());
 
         $game->playCard($secondGameRoomUser->getUserId(), $playerTwo->getCards()[0]);
-        $this->assertCount(0, $game->getFold());
-        $this->assertEquals([], $game->getFold());
+        $this->assertCount(0, $game->getFold()->getFold());
+        $this->assertEquals(new ArrayCollection([]), $game->getFold()->getFold());
         $this->assertEquals(SkullKingPhase::ANNOUNCE->value, $game->getState());
         $this->assertEquals(2, $game->getNbRound());
 

@@ -1,21 +1,66 @@
 import React, {useEffect, useState} from 'react';
 
+/**
+ *
+ * @param announceValues
+ * @param cards
+ * @param eventSourceUrl
+ * @param playerId
+ * @param {{players, gameState, fold, id}} skull
+ * @returns {Element}
+ */
 export default function ({
                              announceValues,
-                             gamePhase,
                              cards,
-                             players,
-                             gameId,
                              eventSourceUrl,
                              playerId,
-                             skull
+                             skull,
+
                          }) {
 
-    const [playersState, setPlayersState] = useState(players);
-    const [gamePhaseState, setGamePhaseState] = useState(gamePhase);
     const [skullState, setSkullState] = useState(skull);
-    const [foldData, setFoldData] = useState([]);
-    const [playersPlayed, setPlayersPlayed] = useState([]);
+    const [cardsState, setCardsState] = useState(cards);
+    const [blockPlayCard, setBlockPlayCard] = useState(false);
+    const onPlayerAnnounced = (data) => {
+
+        setSkullState((oldSkull) => ({
+            ...oldSkull,
+            gameState: data.gamePhase,
+            players: oldSkull.players.map((player) => {
+                if (player.userId === data.userId) {
+                    return {
+                        ...player,
+                        announce: parseInt(data.announce),
+                        score: data.score,
+                    }
+                }
+
+                return player;
+            })
+        }));
+    }
+
+    const onCardPlayed = (data) => {
+
+        setSkullState((oldSkull) => {
+            const t = ({
+                ...data.skull,
+                fold: oldSkull.fold.concat({id: data.cardId, playerId: data.playerId})
+            });
+            console.log('setSkullState', t, oldSkull);
+            return t;
+        });
+        setCardsState((cards) => cards.filter((card) => card.id !== data.cardId || card.playerId !== data.playerId));
+        if (data.skull.fold.length === 0) {
+            setBlockPlayCard(true);
+            window.setTimeout(() => {
+                setSkullState(data.skull);
+                setBlockPlayCard(false);
+            }, 5000)
+        }
+
+
+    }
 
     useEffect(() => {
         const eventSource = new EventSource(eventSourceUrl);
@@ -24,34 +69,12 @@ export default function ({
             console.log(JSON.parse(event.data));
             const data = JSON.parse(event.data);
             if (data.status === 'player_announced') {
-                setPlayersState((actualPlayers) => {
-                    console.log(actualPlayers)
-                    return actualPlayers.map((player) => {
-                        if (player.userId === data.userId) {
-                            return {
-                                ...player,
-                                announce: parseInt(data.announce),
-                                score: data.score,
-                            }
-                        }
-
-                        return player;
-                    })
-                })
-                setGamePhaseState(data.gamePhase)
+                onPlayerAnnounced(data);
 
             }
 
             if (data.status === 'player_play_card') {
-                setSkullState(data.skull);
-                setPlayersPlayed((prevPlayersPlayed) => {
-                    if (!prevPlayersPlayed.includes(data.userId)) {
-                        return [...prevPlayersPlayed, data.userId];
-                    }
-                    return prevPlayersPlayed;
-                });
-
-                setFoldData(data.fold); // Update fold data
+                onCardPlayed(data);
 
             }
         };
@@ -67,7 +90,7 @@ export default function ({
             return `Annonce : ${player.announce}, Score : ${player.score}`;
         }
 
-        if (gamePhaseState !== 'ANNOUNCE') {
+        if (skullState.gameState !== 'ANNOUNCE') {
             return `Annonce : ${player.announce}, Score : ${player.score}`;
         }
 
@@ -75,10 +98,27 @@ export default function ({
     }
 
 
+    async function playCard(playerId, card) {
+
+        const url = `/game/${skullState.id}/player/${playerId}/playcard/${card.id}`;
+        const response = await fetch(url, {
+            method: "POST",
+        });
+
+        const body = await response.json();
+        if (!response.ok) {
+            //todo player display message error
+            console.log(body);
+            throw new Error('Issue fetching play card');
+        }
+
+
+    }
+
     return <div>
 
         {
-            playersState.map((player) => {
+            skullState.players.map((player) => {
                 return <div key={player.id}>
                     <p>{player.name}</p>
                     <p>{player.id}</p>
@@ -87,8 +127,8 @@ export default function ({
             })
         }
         {
-            (gamePhaseState === 'ANNOUNCE') && announceValues.map((announce) => {
-                return <form key={announce} action={`/game/${gameId}/announce/${announce}`} method="POST">
+            (skullState.gameState === 'ANNOUNCE') && announceValues.map((announce) => {
+                return <form key={announce} action={`/game/${skullState.id}/announce/${announce}`} method="POST">
                     <button type="submit"> {announce} </button>
                 </form>
             })
@@ -96,11 +136,14 @@ export default function ({
         }
         <p> Votre main : </p>
         <div id="player_hand">
-            {cards.map((card, index) => {
-                return (gamePhaseState === 'PLAYCARD') ?
-                    <form key={`${card.id}_${index}`} action={`/game/${gameId}/player/${playerId}/playcard/${card.id}`}
-                          method="POST">
-                        <button type="submit"> {card.id}</button>
+            {cardsState.map((card, index) => {
+                return (skullState.gameState === 'PLAYCARD') ?
+                    <form key={`${card.id}_${index}`}
+                          onSubmit={(event) => {
+                              event.preventDefault();
+                              playCard(playerId, card);
+                          }}>
+                        <button type="submit" disabled={blockPlayCard}> {card.id}</button>
                     </form>
                     : <span key={`${card.id}_${index}`}>{card.id} </span>
             })
@@ -109,13 +152,12 @@ export default function ({
         <div>
             <h2>LA FOLD DE SES MORTS</h2>
             <ul>
-                {foldData.map((card) => {
-                    return (
-                        <li key={card.card_id}>
-                            {card.player_name}: {card.card_id}
+                {skullState.fold.map((card) =>
+                    (
+                        <li key={card.id}>
+                            {card.playerId}: {card.id}
                         </li>
-                    );
-                })}
+                    ))}
             </ul>
         </div>
 

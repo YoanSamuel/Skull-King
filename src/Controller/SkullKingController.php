@@ -10,8 +10,10 @@ use App\Entity\Player;
 use App\Entity\SkullKing;
 use App\Repository\PlayerRepository;
 use App\Repository\SkullKingRepository;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\OptimisticLockException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\HubInterface;
@@ -46,14 +48,10 @@ class SkullKingController extends AbstractController
         $skull = $this->skullKingRepo->find($id);
         $userId = new Uuid($request->cookies->get('userid'));
 
-        $gamePhase = $skull->getState();
-
         $announceValues = [];
         for ($i = 0; $i <= $skull->getNbRound(); $i++) {
             $announceValues[] = $i;
         }
-        $fold = $skull->getFold();
-
         $currentPlayer = $skull->findPlayerByUserId($userId);
         $topicName = "game_topic_$id";
 
@@ -61,19 +59,13 @@ class SkullKingController extends AbstractController
             'id' => $id,
             'announceValues' => $announceValues,
             'cards' => array_values(array_map(function (string $cardId) use ($currentPlayer) {
-                return new CardDTO(Card::create($cardId), $currentPlayer);
+                return new CardDTO(Card::create($cardId), $currentPlayer?->getId());
             }, $currentPlayer->getCards())),
-            'gamePhase' => $gamePhase,
-            'fold' => $fold,
-            'players' => array_map(function (Player $player) {
-                return new PlayerDTO($player);
-            }, $skull->getPlayers()->toArray()),
             'skull' => new SkullDTO($skull),
             'topicName' => $topicName,
             'playerId' => $userId,
             'version' => $skull->getVersion(),
         ];
-//        $this->skullKingRepo->save($skull, true);
         return $this->render('game/index.html.twig', $skullData);
     }
 
@@ -123,33 +115,42 @@ class SkullKingController extends AbstractController
         $skull = $this->skullKingRepo->find($id);
         try {
             $userId = new Uuid($request->cookies->get('userid'));
-            $skull->playCard($userId, $cardId);
-            $fold = $skull->getFold();
-            $playersArray = $skull->getPlayers()->toArray();
-            foreach ($playersArray as $player) {
-                $playerToUpdate = $this->playerRepository->find($player->getId());
-                $this->playerRepository->save($playerToUpdate);
-            }
+            $player = $skull->playCard($userId, $cardId);
             $this->skullKingRepo->save($skull, true);
             $topicName = "game_topic_$id";
             $this->hub->publish(new Update(
                 $topicName, json_encode([
                 'status' => 'player_play_card',
                 'userId' => $userId,
-                'fold' => $fold,
-                'players' => $skull->getPlayers()->toArray(),
-                'gamePhase' => $skull->getState(),
+                'skull' => new SkullDTO($skull),
+                'cardId' => $cardId,
+                'playerId' => $player->getId(),
 
             ])));
 
 
-            return $this->redirectToRoute('current_game', ['id' => $id]);
+            return new JsonResponse(null, 200);
 
-        } catch (OptimisticLockException $e) {
+        } catch (\Exception $e) {
 
-            return $this->redirectToRoute('current_game', ['id' => $id]);
+            return new JsonResponse(['code' => $e->getCode(),
+                'message' => $e->getMessage()], 400);
         }
 
 
     }
+
+
+    /**
+     * @param Collection $players
+     * @return PlayerDTO[]
+     */
+    public function convertPlayersDTO(Collection $players): array
+    {
+        return $players->map(function (Player $player) {
+            return new PlayerDTO($player);
+        })->toArray();
+    }
+
+
 }

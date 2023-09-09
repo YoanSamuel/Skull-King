@@ -3,7 +3,6 @@
 namespace App\Controller\dto;
 
 use App\Entity\Card;
-use App\Entity\Player;
 
 class CardDTO
 {
@@ -15,11 +14,11 @@ class CardDTO
     public ?string $value;
 
 
-    public function __construct(Card $card, ?Player $player = null)
+    public function __construct(Card $card, ?int $playerId = null)
     {
         $this->cardType = $card->getCardType();
         $this->id = $card->getId();
-        $this->playerId = $player?->getId();
+        $this->playerId = $playerId;
         $this->color = $card->getColor();
         $this->pirateName = $card->getPirateName();
         $this->value = $card->getValue();
