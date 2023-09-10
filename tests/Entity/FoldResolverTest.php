@@ -4,6 +4,7 @@ namespace App\Tests\Entity;
 
 use App\Entity\CardInFold;
 use App\Entity\Fold;
+use App\Entity\FoldResolved;
 use PHPUnit\Framework\TestCase;
 
 class FoldResolverTest extends TestCase
@@ -181,19 +182,19 @@ class FoldResolverTest extends TestCase
 
 
         $result = $fold->resolve();
-        $this->assertEquals($result, new CardInFold("11_BLACK", 2));
+        $this->assertEquals($result, new FoldResolved(new CardInFold("11_BLACK", 2)));
 
         $result1 = $fold1->resolve();
-        $this->assertEquals($result1, new CardInFold("12_RED", 1));
+        $this->assertEquals($result1, new FoldResolved(new CardInFold("12_RED", 1)));
 
         $result2 = $fold2->resolve();
-        $this->assertEquals($result2, new CardInFold("MONIQUE_MERMAID", 2));
+        $this->assertEquals($result2, new FoldResolved(new CardInFold("MONIQUE_MERMAID", 2), 50));
 
         $result3 = $fold3->resolve();
-        $this->assertEquals($result3, new CardInFold("TORTUGAJACK_PIRATE", 1));
+        $this->assertEquals($result3, new FoldResolved(new CardInFold("TORTUGAJACK_PIRATE", 1)));
 
         $result4 = $fold4->resolve();
-        $this->assertEquals($result4, new CardInFold("ELISABETH_MERMAID", 1));
+        $this->assertEquals($result4, new FoldResolved(new CardInFold("ELISABETH_MERMAID", 1)));
 
 
     }
@@ -229,7 +230,7 @@ class FoldResolverTest extends TestCase
             ]);
 
         $result5 = $fold5->resolve();
-        $this->assertEquals($result5, null);
+        $this->assertNull($result5->getCardInFold());
     }
 
     public function test_all_players_played_same_color_should_return_winner()
@@ -264,7 +265,7 @@ class FoldResolverTest extends TestCase
             ]);
 
         $result5 = $fold5->resolve();
-        $this->assertEquals($result5, new CardInFold("9_BLACK", 1));
+        $this->assertEquals($result5, new FoldResolved(new CardInFold("9_BLACK", 1)));
     }
 
 

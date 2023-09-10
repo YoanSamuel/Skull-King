@@ -196,13 +196,12 @@ class SkullKing
 
         if ($allPlayersPlayed) {
 
-            $winner = $this->resolveFold();
+            $winnerWithPotentialBonus = $this->resolveFold();
 
-            if (!is_null($winner)) {
+            if (!is_null($winnerWithPotentialBonus)) {
 
-                $this->currentPlayerId = $winner->getId();
+                $this->currentPlayerId = $winnerWithPotentialBonus->getPlayer()->getId();
 
-                // rename en roundResult le fold foldresult
                 /**
                  * @var FoldResult $roundFoldResult
                  */
@@ -210,7 +209,7 @@ class SkullKing
                     return $this->nbRound == $foldResult->getNbRound();
                 });
 
-                $roundFoldResult->incrementFoldDone($winner);
+                $roundFoldResult->incrementFoldDone($winnerWithPotentialBonus);
             }
             $this->colorAsked = null;
             $this->fold = [];
@@ -220,26 +219,6 @@ class SkullKing
             });
 
             if ($everyPlayersHasEmptyHand) {
-
-                /** @var FoldResult $foldResult */
-                $foldResult = $this->foldResults->last();
-                $playerAnnounces = $foldResult->getPlayerAnnounces();
-                foreach ($playerAnnounces as $playerAnnounce) {
-
-                    $player = $this->findPlayerById($playerAnnounce->getPlayerId());
-                    $announce = $playerAnnounce->getAnnounced();
-                    $done = $playerAnnounce->getDone();
-                    //                        dd($playerAnnounce);
-                    if ($announce === 0 && $done === 0) {
-                        $scoreChange = $this->getNbRound() * 10;
-                    } elseif ($announce === $done) {
-                        $scoreChange = $announce * 20;
-                    } else {
-                        $announce < $done ? $scoreChange = -10 * ($done - $announce) : $scoreChange = -10 * ($announce - $done);
-                    }
-
-                    $player->incrementScore($scoreChange);
-                }
 
                 $this->prepareNextRound();
             }
@@ -262,16 +241,18 @@ class SkullKing
     }
 
 
-    public function resolveFold(): ?Player
+    public function resolveFold(): ?WinnerWithPotentialBonus
     {
 
-
-        $cardInFold = $this->getFold()->resolve();
+        $foldResolved = $this->getFold()->resolve();
+        $cardInFold = $foldResolved->getCardInFold();
         if (is_null($cardInFold)) {
             return null;
         }
 
-        return $this->findPlayerById($cardInFold->getPlayerId());
+        $winner = $this->findPlayerById($cardInFold->getPlayerId());
+
+        return new WinnerWithPotentialBonus($winner, $foldResolved->getPotentialBonus());
 
     }
 

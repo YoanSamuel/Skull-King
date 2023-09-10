@@ -21,6 +21,7 @@ export default function ({
     const [skullState, setSkullState] = useState(skull);
     const [cardsState, setCardsState] = useState(cards);
     const [blockPlayCard, setBlockPlayCard] = useState(false);
+    console.log(skullState);
     const onPlayerAnnounced = (data) => {
 
         setSkullState((oldSkull) => ({
@@ -59,6 +60,22 @@ export default function ({
             }, 5000)
         }
 
+
+    }
+
+    const scoreByPlayer = (roundNumber, playerId) => {
+
+        const announces = skullState.scoreBoard[playerId];
+        let sum = 0;
+        announces.forEach((announce, index) => {
+            const announceRoundNumber = index + 1;
+            if (announceRoundNumber <= roundNumber) {
+                sum += announce.score;
+            }
+
+        })
+
+        return sum;
 
     }
 
@@ -160,6 +177,36 @@ export default function ({
                     ))}
             </ul>
         </div>
+        <div>
+            <h2>SCORE</h2>
+            <table>
+                <thead>
+                <tr>
+                    <th key="round/player"> Round/Players</th>
+                    {Object.keys(skullState.scoreBoard).map((playerId) => <th key={playerId}>{playerId}</th>)}
+                </tr>
+                </thead>
+                <tbody>
+                {[...Array(10).keys()].map((roundNumber) => <tr key={roundNumber + 1}>
+                    <td>{roundNumber + 1}</td>
+                    {Object.keys(skullState.scoreBoard).map((playerId) => <td key={`${playerId}_${roundNumber}`}>
+                        {!!skullState.scoreBoard[playerId] && !!skullState.scoreBoard[playerId][roundNumber]
+                            ? <div>
+                                <span>Announced : {skullState.scoreBoard[playerId][roundNumber].announced} </span>
+                                <span>Done : {skullState.scoreBoard[playerId][roundNumber].done} </span>
+                                <span>Potential Bonus : {skullState.scoreBoard[playerId][roundNumber].potentialBonus} </span>
+                                {roundNumber + 1 < skullState.roundNumber &&
+                                    <span>Score : {scoreByPlayer(roundNumber + 1, playerId)} </span>
+                                }
+                            </div>
+                            : "----"}
+                    </td>)}
+
+                </tr>)}
+                </tbody>
+            </table>
+        </div>
+
 
     </div>
 

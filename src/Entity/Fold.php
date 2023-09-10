@@ -29,36 +29,39 @@ class Fold
     }
 
 
-    public function resolve(): ?CardInFold
+    public function resolve(): FoldResolved
     {
 
         $skullKing = $this->findCardByType(CardType::SKULLKING);
         $mermaid = $this->findCardByType(CardType::MERMAID);
         if (!is_null($skullKing)) {
             if (!is_null($mermaid)) {
-                return $mermaid;
+                return new FoldResolved($mermaid, 50);
             }
-            return $skullKing;
+            $countPirates = $this->fold->filter(fn(CardInFold $cardInFold) => $cardInFold->getCard()->getCardType() == CardType::PIRATE->value
+            )->count();
+
+            return new FoldResolved($skullKing, $countPirates * 30);
         }
 
         $pirate = $this->findCardByType(CardType::PIRATE);
         if (!is_null($pirate)) {
-            return $pirate;
+            return new FoldResolved($pirate);
         }
 
         if (!is_null($mermaid)) {
-            return $mermaid;
+            return new FoldResolved($mermaid);
         }
 
         $blackCard = $this->findHighestColorValue(CardColor::BLACK);
         if (!is_null($blackCard)) {
-            return $blackCard;
+            return new FoldResolved($blackCard);
         }
 
         $firstcolorAsked = $this->findCardByType(CardType::COLORED);
         $colorAsked = is_null($firstcolorAsked) ? null : CardColor::from($firstcolorAsked->getCard()->getColor());
 
-        return $this->findHighestColorValue($colorAsked);
+        return new FoldResolved($this->findHighestColorValue($colorAsked));
 
     }
 

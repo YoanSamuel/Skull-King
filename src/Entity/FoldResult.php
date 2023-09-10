@@ -47,17 +47,17 @@ class FoldResult
         return $foldResult;
     }
 
-    public function incrementFoldDone(Player $winner): void
+    public function incrementFoldDone(WinnerWithPotentialBonus $winnerWithPotentialBonus): void
     {
 
         /**
          * @var PlayerAnnounce $winnerPlayerAnnounce
          */
 
-        $winnerPlayerAnnounce = $this->getPlayerAnnounces()->findFirst(function (int $key, PlayerAnnounce $playerAnnounce) use ($winner) {
-            return $winner->getId() == $playerAnnounce->getPlayerId();
+        $winnerPlayerAnnounce = $this->getPlayerAnnounces()->findFirst(function (int $key, PlayerAnnounce $playerAnnounce) use ($winnerWithPotentialBonus) {
+            return $winnerWithPotentialBonus->getPlayer()->getId() == $playerAnnounce->getPlayerId();
         });
-        $winnerPlayerAnnounce->incrementDone();
+        $winnerPlayerAnnounce->incrementDone($winnerWithPotentialBonus->getPotentialBonus());
     }
 
     public function getNbRound(): int

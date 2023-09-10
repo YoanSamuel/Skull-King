@@ -16,6 +16,10 @@ class PlayerAnnounce
     #[ORM\Column(type: 'integer')]
     private int $playerId;
 
+    #[ORM\Column(type: 'integer')]
+    private int $potentialBonus = 0;
+
+
     #[ORM\Column]
     private int $announced;
 
@@ -32,8 +36,22 @@ class PlayerAnnounce
         $this->announced = $announced;
     }
 
-    public function incrementDone(): void
+    public function getScore(int $roundNumber)
     {
+        if ($this->announced == 0 && $this->done == 0) {
+            return $roundNumber * 10;
+        }
+
+        if ($this->announced == $this->done) {
+            return ($this->done * 20) + $this->potentialBonus;
+        }
+
+        return abs($this->announced - $this->done) * -10;
+    }
+
+    public function incrementDone(int $potentialBonus): void
+    {
+        $this->potentialBonus += $potentialBonus;
         $this->done += 1;
     }
 
@@ -85,6 +103,11 @@ class PlayerAnnounce
     public function setFoldResult(FoldResult $foldResult): void
     {
         $this->foldResult = $foldResult;
+    }
+
+    public function getPotentialBonus(): int
+    {
+        return $this->potentialBonus;
     }
 
 
