@@ -2,13 +2,10 @@
 
 namespace App\Controller;
 
-use App\Controller\dto\CardDTO;
 use App\Controller\dto\PlayerDTO;
 use App\Controller\dto\SkullDTO;
-use App\Entity\Card;
 use App\Entity\Player;
 use App\Entity\SkullKing;
-use App\Repository\PlayerRepository;
 use App\Repository\SkullKingRepository;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\OptimisticLockException;
@@ -27,16 +24,13 @@ class SkullKingController extends AbstractController
 
     private SkullKingRepository $skullKingRepo;
     private HubInterface $hub;
-    private PlayerRepository $playerRepository;
 
 
     public function __construct(SkullKingRepository $skullKingRepo,
-                                HubInterface        $hub,
-                                PlayerRepository    $playerRepository)
+                                HubInterface        $hub)
     {
         $this->skullKingRepo = $skullKingRepo;
         $this->hub = $hub;
-        $this->playerRepository = $playerRepository;
 
     }
 
@@ -52,21 +46,27 @@ class SkullKingController extends AbstractController
         for ($i = 0; $i <= $skull->getNbRound(); $i++) {
             $announceValues[] = $i;
         }
-        $currentPlayer = $skull->findPlayerByUserId($userId);
+
         $topicName = "game_topic_$id";
 
-        $skullData = [
+        return $this->render('game/index.html.twig', [
             'id' => $id,
             'announceValues' => $announceValues,
-            'cards' => array_values(array_map(function (string $cardId) use ($currentPlayer) {
-                return new CardDTO(Card::create($cardId), $currentPlayer?->getId());
-            }, $currentPlayer->getCards())),
-            'skull' => new SkullDTO($skull),
+            'skull' => new SkullDTO($skull, $userId),
             'topicName' => $topicName,
-            'playerId' => $userId,
+            'userId' => $userId,
             'version' => $skull->getVersion(),
-        ];
-        return $this->render('game/index.html.twig', $skullData);
+        ]);
+    }
+
+    #[Route('/api/game/{id}', name: 'get_skullking', methods: ["GET"])]
+    public function getSkullKing($id, Request $request): JsonResponse
+    {
+
+        $skull = $this->skullKingRepo->find($id);
+        $userId = new Uuid($request->cookies->get('userid'));
+
+        return new JsonResponse(json_encode(new SkullDTO($skull, $userId)), 200, ['Content-type' => 'application/json'], true);
     }
 
     /**
@@ -122,9 +122,9 @@ class SkullKingController extends AbstractController
                 $topicName, json_encode([
                 'status' => 'player_play_card',
                 'userId' => $userId,
-                'skull' => new SkullDTO($skull),
                 'cardId' => $cardId,
                 'playerId' => $player->getId(),
+                'gameId' => $skull->getId()
 
             ])));
 

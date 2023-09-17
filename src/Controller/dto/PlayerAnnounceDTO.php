@@ -10,6 +10,7 @@ class PlayerAnnounceDTO
     public int $done;
     public int $potentialBonus;
     public int $score;
+    public int $roundNumber;
 
 
     public function __construct(PlayerAnnounce $playerAnnounce, int $roundNumber)
@@ -18,6 +19,7 @@ class PlayerAnnounceDTO
         $this->done = $playerAnnounce->getDone();
         $this->potentialBonus = $playerAnnounce->getPotentialBonus();
         $this->score = $playerAnnounce->getScore($roundNumber);
+        $this->roundNumber = $roundNumber;
     }
 
 

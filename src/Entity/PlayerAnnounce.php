@@ -38,9 +38,10 @@ class PlayerAnnounce
 
     public function getScore(int $roundNumber)
     {
-        if ($this->announced == 0 && $this->done == 0) {
-            return $roundNumber * 10;
+        if ($this->announced == 0) {
+            return $roundNumber * 10 * ($this->done == 0 ? 1 : -1);
         }
+
 
         if ($this->announced == $this->done) {
             return ($this->done * 20) + $this->potentialBonus;

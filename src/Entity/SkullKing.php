@@ -214,9 +214,8 @@ class SkullKing
             $this->colorAsked = null;
             $this->fold = [];
 
-            $everyPlayersHasEmptyHand = $this->players->forAll(function (int $key, Player $player) {
-                return count($player->getCards()) == 0;
-            });
+            $everyPlayersHasEmptyHand = $this->players->forAll(fn(int $key, Player $player) => $player->getCards()->isEmpty()
+            );
 
             if ($everyPlayersHasEmptyHand) {
 

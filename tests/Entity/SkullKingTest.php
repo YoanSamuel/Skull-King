@@ -2,7 +2,6 @@
 
 namespace App\Tests\Entity;
 
-use App\Entity\Card;
 use App\Entity\CardInFold;
 use App\Entity\Deck;
 use App\Entity\GameRoomUser;
@@ -91,7 +90,7 @@ class SkullKingTest extends TestCase
         $game->announce($firstGameRoomUser->getUserId(), 1);
         $game->announce($secondGameRoomUser->getUserId(), 0);
 
-        $card = Card::create($playerOne->getCards()[0]);
+        $card = $playerOne->getCards()->first();
 
         $game->playCard($firstGameRoomUser->getUserId(), $card->getId());
         $this->assertCount(1, $game->getFold()->getFold());
@@ -101,7 +100,7 @@ class SkullKingTest extends TestCase
 
         $this->assertEmpty($playerOne->getCards());
 
-        $game->playCard($secondGameRoomUser->getUserId(), $playerTwo->getCards()[0]);
+        $game->playCard($secondGameRoomUser->getUserId(), $playerTwo->getCards()->first()->getId());
         $this->assertCount(0, $game->getFold()->getFold());
         $this->assertEquals(new ArrayCollection([]), $game->getFold()->getFold());
         $this->assertEquals(SkullKingPhase::ANNOUNCE->value, $game->getState());

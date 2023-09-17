@@ -15,10 +15,9 @@
 
 
     <div {{ react_component('Game', {
-        'cards': cards,
         'announceValues' :  announceValues,
         'eventSourceUrl': mercure(topicName, { subscribe: topicName }),
-        'playerId': playerId,
+        'userId': userId,
         'version': version,
         'skull': skull,
     }) }}>
@@ -30,9 +29,3 @@
 
 
 {% endblock %}
-
-
-
-{# annonce seté sur le player en base
-des que tous les joueurs ont misé stop plus de modifications d'annonces
-serveur doit envoyer un message pour commencer la partie #}

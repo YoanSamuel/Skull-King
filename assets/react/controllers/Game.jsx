@@ -3,25 +3,23 @@ import React, {useEffect, useState} from 'react';
 /**
  *
  * @param announceValues
- * @param cards
  * @param eventSourceUrl
- * @param playerId
+ * @param currentUserId
  * @param {{players, gameState, fold, id}} skull
  * @returns {Element}
  */
 export default function ({
                              announceValues,
-                             cards,
                              eventSourceUrl,
-                             playerId,
+                             userId: currentUserId,
                              skull,
-
                          }) {
 
     const [skullState, setSkullState] = useState(skull);
-    const [cardsState, setCardsState] = useState(cards);
     const [blockPlayCard, setBlockPlayCard] = useState(false);
-    console.log(skullState);
+
+    let currentPlayer = skullState.players.find((player) => player.userId === currentUserId)
+
     const onPlayerAnnounced = (data) => {
 
         setSkullState((oldSkull) => ({
@@ -41,21 +39,38 @@ export default function ({
         }));
     }
 
-    const onCardPlayed = (data) => {
+    const getSkullKing = async (skullId) => {
 
-        setSkullState((oldSkull) => {
-            const t = ({
-                ...data.skull,
-                fold: oldSkull.fold.concat({id: data.cardId, playerId: data.playerId})
-            });
-            console.log('setSkullState', t, oldSkull);
-            return t;
+        const url = `/api/game/${skullId}`;
+        const response = await fetch(url, {
+            method: "GET",
         });
-        setCardsState((cards) => cards.filter((card) => card.id !== data.cardId || card.playerId !== data.playerId));
-        if (data.skull.fold.length === 0) {
+
+        const body = await response.json();
+        if (!response.ok) {
+            //todo player display message error
+            console.log(body);
+            throw new Error('Issue fetching get Skull');
+        }
+        return body;
+
+    }
+
+    const onCardPlayed = async (eventData) => {
+
+        const skullKing = await getSkullKing(eventData.gameId)
+        setSkullState((oldSkull) => {
+            return ({
+                ...skullKing,
+                fold: oldSkull.fold.concat({id: eventData.cardId, playerId: eventData.playerId})
+            });
+
+        });
+
+        if (skullKing.fold.length === 0) {
             setBlockPlayCard(true);
             window.setTimeout(() => {
-                setSkullState(data.skull);
+                setSkullState(skullKing);
                 setBlockPlayCard(false);
             }, 5000)
         }
@@ -103,7 +118,7 @@ export default function ({
             return 'En attente...';
         }
 
-        if (player.userId === playerId) {
+        if (player.userId === currentUserId) {
             return `Annonce : ${player.announce}, Score : ${player.score}`;
         }
 
@@ -153,12 +168,12 @@ export default function ({
         }
         <p> Votre main : </p>
         <div id="player_hand">
-            {cardsState.map((card, index) => {
+            {currentPlayer.cards.map((card, index) => {
                 return (skullState.gameState === 'PLAYCARD') ?
                     <form key={`${card.id}_${index}`}
                           onSubmit={(event) => {
                               event.preventDefault();
-                              playCard(playerId, card);
+                              playCard(currentUserId, card);
                           }}>
                         <button type="submit" disabled={blockPlayCard}> {card.id}</button>
                     </form>

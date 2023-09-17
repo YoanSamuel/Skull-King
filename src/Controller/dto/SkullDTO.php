@@ -8,6 +8,7 @@ use App\Entity\FoldResult;
 use App\Entity\Player;
 use App\Entity\PlayerAnnounce;
 use App\Entity\SkullKing;
+use Symfony\Component\Uid\Uuid;
 
 class SkullDTO
 {
@@ -18,13 +19,13 @@ class SkullDTO
     public array $scoreBoard = [];
     public int $roundNumber;
 
-    public function __construct(SkullKing $skullKing)
+
+    public function __construct(SkullKing $skullKing, Uuid $currentUserId)
     {
         $this->id = $skullKing->getId();
         $this->fold = $this->convertFoldDto($skullKing->getFold());
-        $this->players = $skullKing->getPlayers()->map(function (Player $player) {
-            return new PlayerDTO($player);
-        })->toArray();
+        $this->players = $skullKing->getPlayers()->map(fn(Player $player) => new PlayerDTO($player, $currentUserId)
+        )->toArray();
 
         $this->roundNumber = $skullKing->getNbRound();
         $this->gameState = $skullKing->getState();
@@ -42,7 +43,6 @@ class SkullDTO
                 }
             }
         }
-
     }
 
     private function convertFoldDto(Fold $fold)

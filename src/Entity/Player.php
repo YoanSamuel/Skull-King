@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Uid\Uuid;
 
@@ -53,9 +55,9 @@ class Player
         return $this->id;
     }
 
-    public function getCards(): array
+    public function getCards(): Collection
     {
-        return $this->cards;
+        return (new ArrayCollection($this->cards))->map(fn($cardId) => Card::create($cardId));
     }
 
     public function findCard(string $cardId): ?Card

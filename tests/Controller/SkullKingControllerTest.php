@@ -49,8 +49,8 @@ class SkullKingControllerTest extends WebTestCase
         $skull = $skullRepository->find($id[2]);
         $jeanPlayer = $skull->findPlayerByUserId($jeanId);
         $billPlayer = $skull->findPlayerByUserId($billId);
-        $jeanCard = $jeanPlayer->getCards()[0];
-        $billCard = $billPlayer->getCards()[0];
+        $jeanCard = $jeanPlayer->getCards()->first()->getId();
+        $billCard = $billPlayer->getCards()->first()->getId();
         $bill->request('POST', $redirectLocation . "/player/unused/playcard/" . $billCard);
         $jean->request('POST', $redirectLocation . "/player/unused/playcard/" . $jeanCard);
 
