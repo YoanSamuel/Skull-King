@@ -39,7 +39,11 @@ class GameRoomController extends AbstractController
     #[Route('/game/room', name: 'app_game_room', methods: ["GET"])]
     public function index(Request $request): Response
     {
+        if (!$request->cookies->has('userid')) {
 
+            return $this->redirectToRoute('showlogin');
+
+        }
         $form = $this->createFormBuilder(null, ["method" => "POST"])
             ->add('Jouer', SubmitType::class)
             ->getForm();

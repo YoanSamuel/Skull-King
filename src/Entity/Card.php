@@ -2,10 +2,6 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Exception;
-use Doctrine\ORM\Mapping as ORM;
-
-
 
 class Card
 {
@@ -40,32 +36,32 @@ class Card
 
     public static function coloredCard(CardColor $color, int $value): Card
     {
-        return new Card( CardType::COLORED->value, null, null, $color->value, $value);
+        return new Card(CardType::COLORED->value, null, null, $color->value, $value);
     }
 
     public static function pirateCard(PirateName $name): Card
     {
-        return new Card( CardType::PIRATE->value, $name->value, null, null, null);
+        return new Card(CardType::PIRATE->value, $name->value, null, null, null);
     }
 
     public static function skullCard(): Card
     {
-        return new Card( CardType::SKULLKING->value, null, null, null, null);
+        return new Card(CardType::SKULLKING->value, null, null, null, null);
     }
 
     public static function escapeCard(): Card
     {
-        return new Card( CardType::ESCAPE->value, null, null, null, null);
+        return new Card(CardType::ESCAPE->value, null, null, null, null);
     }
 
     public static function scaryMaryCard(): Card
     {
-        return new Card( CardType::SCARYMARY->value, null, null, null, null);
+        return new Card(CardType::SCARYMARY->value, null, null, null, null);
     }
 
     public static function mermaidCard(MermaidName $name): Card
     {
-        return new Card( CardType::MERMAID->value, null, $name->value, null, null);
+        return new Card(CardType::MERMAID->value, null, $name->value, null, null);
     }
 
     public static function create(string $cardId): Card
@@ -73,14 +69,14 @@ class Card
 
         $splitId = explode('_', $cardId);
         return match ($cardId) {
-            CardType::SKULLKING->value =>  Card::skullCard(),
-            CardType::ESCAPE->value =>  Card::escapeCard(),
-            CardType::SCARYMARY->value =>  Card::scaryMaryCard(),
+            CardType::SKULLKING->value => Card::skullCard(),
+            CardType::ESCAPE->value => Card::escapeCard(),
+            CardType::SCARYMARY->value => Card::scaryMaryCard(),
             default => str_contains($cardId, CardType::PIRATE->value)
-                        ? Card::pirateCard(PirateName::from($splitId[0]))
-                            : (str_contains($cardId, CardType::MERMAID->value)
-                        ? Card::mermaidCard(MermaidName::from($splitId[0]))
-                            : Card::coloredCard(CardColor::from($splitId[1]), $splitId[0]))
+                ? Card::pirateCard(PirateName::from($splitId[0]))
+                : (str_contains($cardId, CardType::MERMAID->value)
+                    ? Card::mermaidCard(MermaidName::from($splitId[0]))
+                    : Card::coloredCard(CardColor::from($splitId[0]), $splitId[1]))
 
         };
     }
@@ -88,9 +84,9 @@ class Card
     public function getId(): string
     {
         return match ($this->cardType) {
-            CardType::COLORED->value => $this->value . "_" . $this->color,
-            CardType::PIRATE->value => $this->pirateName. "_PIRATE",
-            CardType::MERMAID->value => $this->mermaidName. "_MERMAID",
+            CardType::COLORED->value => $this->color . "_" . $this->value,
+            CardType::PIRATE->value => $this->pirateName . "_PIRATE",
+            CardType::MERMAID->value => $this->mermaidName . "_MERMAID",
             default => $this->cardType,
         };
     }
@@ -182,7 +178,7 @@ class Card
         return $this->player;
     }
 
-    public function getMermaidName() : ?string
+    public function getMermaidName(): ?string
     {
         return $this->mermaidName;
     }

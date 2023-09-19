@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import '/public/css/current_gameroom.css';
 
 
 export default function ({users, skullkingid, pathEnterGameRoom, pathCurrentGame, eventSourceUrl}) {
@@ -23,11 +24,11 @@ export default function ({users, skullkingid, pathEnterGameRoom, pathCurrentGame
         }
     }, [])
 
-    return <div class="players-list">
-        <ul>
+    return <div className="players-list">
+        <ul id="player-list">
 
             {usersState.map((user) => {
-                return <li key={user.userId}>
+                return <li key={user.userId} id="player-names">
                     {user.userName}
                 </li>
             })}
@@ -38,9 +39,11 @@ export default function ({users, skullkingid, pathEnterGameRoom, pathCurrentGame
             usersState.length > 1
                 ? (!skullkingid
                     ? <form action={pathEnterGameRoom} method="POST">
-                        <button type="submit"> Démarrer la partie</button>
+                        <button type="submit" id="launch-game" className="button"> Démarrer la partie</button>
                     </form>
-                    : <button><a href={pathCurrentGame}>Rejoindre la partie en cours</a></button>)
+                    : <a href={pathCurrentGame} id="join-game" className="button">
+                        Rejoindre la partie en cours
+                    </a>)
                 : undefined
         }
 

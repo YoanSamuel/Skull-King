@@ -40,6 +40,11 @@ class SkullKingController extends AbstractController
     {
 
         $skull = $this->skullKingRepo->find($id);
+
+        if (is_null($skull)) {
+            $this->redirectToRoute('app_game_room');
+        }
+
         $userId = new Uuid($request->cookies->get('userid'));
 
         $announceValues = [];

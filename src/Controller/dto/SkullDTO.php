@@ -13,6 +13,7 @@ use Symfony\Component\Uid\Uuid;
 class SkullDTO
 {
     public string $id;
+    public int $currentPlayerTurnId;
     public array $fold;
     public array $players;
     public string $gameState;
@@ -23,6 +24,7 @@ class SkullDTO
     public function __construct(SkullKing $skullKing, Uuid $currentUserId)
     {
         $this->id = $skullKing->getId();
+        $this->currentPlayerTurnId = $skullKing->getCurrentPlayerId();
         $this->fold = $this->convertFoldDto($skullKing->getFold());
         $this->players = $skullKing->getPlayers()->map(fn(Player $player) => new PlayerDTO($player, $currentUserId)
         )->toArray();

@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import '/public/css/game.css';
 
 
 /**
@@ -164,24 +163,30 @@ export default function ({
             <div className="players-info">
                 {error && <div className={`error-message ${error ? 'show' : ''}`}>{error}</div>}
 
-                {
-                    skullState.players.map((player) => {
-                        return <div key={player.id} className="player-card">
-                            <p>{player.name}</p>
-                            <p>{displayPlayerAnnounce(player)}</p>
-                        </div>
-                    })
-                }
-                {
-                    (skullState.gameState === 'ANNOUNCE') && announceValues.map((announce) => {
-                        return <form key={announce} action={`/game/${skullState.id}/announce/${announce}`} method="POST">
-                            <button type="submit"> {announce} </button>
-                        </form>
-                    })
+                {/*{*/}
+                {/*    skullState.players.map((player) => {*/}
+                {/*        return <div key={player.id} className="player-card">*/}
+                {/*            <p>{player.name}</p>*/}
+                {/*            <p>{displayPlayerAnnounce(player)}</p>*/}
+                {/*        </div>*/}
+                {/*    })*/}
+                {/*}*/}
+                <div className="turn-indicator">
+                    <p>C'est à {skull.currentPlayerTurnId} de jouer.</p>
+                </div>
+                <div className="button-container-announce">
+                    {
+                        (skullState.gameState === 'ANNOUNCE') && announceValues.map((announce) => {
+                            return <form key={announce} action={`/game/${skullState.id}/announce/${announce}`}
+                                         method="POST">
+                                <button type="submit" id="announce-button"> {announce} </button>
+                            </form>
+                        })
 
-                }
+                    }
+                </div>
                 <p> Votre main : </p>
-                <div id="player_hand">
+                <div id="player-hand">
                     {currentPlayer.cards.map((card, index) => {
                         return (skullState.gameState === 'PLAYCARD') ?
                             <form key={`${card.id}_${index}`}
@@ -189,27 +194,36 @@ export default function ({
                                       event.preventDefault();
                                       playCard(currentUserId, card);
                                   }}>
-                                <button type="submit" disabled={blockPlayCard}> {card.id}</button>
+                                <button type="submit" disabled={blockPlayCard}>
+                                    <img src={`/images/game/cards/${card.id}.png`} alt={card.id}
+                                         className="card-player-hand"/>
+                                </button>
                             </form>
-                            : <span key={`${card.id}_${index}`}>{card.id} </span>
+                            : <span key={`${card.id}_${index}`}>
+                                <img src={`/images/game/cards/${card.id}.png`} alt={card.id}
+                                     className="card-player-hand"/>
+                            </span>
                     })
                     }
                 </div>
                 <div className="fold">
                     <h2>LA FOLD</h2>
-                    <ul>
+                    <div className="table">
                         {skullState.fold.map((card) => {
                             const playingPlayer = skullState.players.find(p => p.id === String(card.playerId));
                             const playerName = playingPlayer ? playingPlayer.name : "Joueur inconnu";
 
                             return (
-                                <li key={card.id}>
+                                <div key={card.id} className="card folded-card">
 
-                                    {card.playerId} {playerName}: {card.id}
-                                </li>
+                                    <span className="player-name">{playerName}</span>
+                                    <img src={`/images/game/cards/${card.id}.png`}
+                                         alt={card.id}
+                                         className="card-player-hand"/>
+                                </div>
                             );
                         })}
-                    </ul>
+                    </div>
                 </div>
             </div>
 
@@ -218,7 +232,10 @@ export default function ({
                     <thead>
                     <tr>
                         <th key="round/player" className="thead-round-players"> Round/Players</th>
-                        {Object.keys(skullState.scoreBoard).map((playerId) => <th key={playerId}>{playerId}</th>)}
+                        {Object.keys(skullState.scoreBoard).map((playerId) => {
+                            const player = skullState.players.find(p => p.id === playerId);
+                            return <th key={playerId}>{player ? player.name : playerId}</th>
+                        })}
                     </tr>
                     </thead>
                     <tbody>
@@ -241,6 +258,7 @@ export default function ({
                     </tr>)}
                     </tbody>
                 </table>
+                <div className="background-image"></div>
             </div>
         </div>
 

@@ -1,7 +1,7 @@
 @font-face {
     font-family: "IM Fell English SC";
     src: local("IM Fell English SC"),
-    url("/public/fonts/im-fell-english-sc.ttf") format("truetype");
+    url('/public/fonts/im-fell-english-sc.ttf') format("truetype");
     font-weight: bold;
 }
 
@@ -12,13 +12,23 @@
     justify-content: space-between;
 }
 
+.turn-indicator {
+    background-color: #f39c12;
+    color: white;
+    text-align: center;
+    padding: 5px;
+    font-size: large;
+    border-radius: 5px;
+    margin-bottom: 3px;
+}
+
 .players-info {
     width: 40%;
 }
 
 .player-card {
     border: 1px solid #ccc;
-    width: 50%;
+    width: 25%;
     border-bottom: 7px solid #3498db;
     background-color: #e39e09;
     padding: 10px;
@@ -40,7 +50,6 @@
 #player-hand {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
 }
 
 
@@ -63,41 +72,51 @@
 }
 
 .score-container {
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
     width: 40%;
     margin: 0;
 }
 
-th {
-    background-color: #e39e09;
-    color: white;
-}
-
-th:first-of-type {
-    border-radius: 5px 0 0 0;
-}
-
-
-th:last-of-type {
-    border-radius: 0 5px 0 0;
+.background-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 90%;
+    background-image: url('/public/images/score.png');
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: -1;
 }
 
 .score-table {
     border-radius: 5px;
-    width: 100%;
+    width: 90%;
+    margin-top: 50px;
+    align-content: center;
     border-collapse: collapse;
 }
 
 .score-table th, .score-table td {
-    border-bottom: 1px solid #ccc;
     padding: 15px;
     text-align: center;
 }
 
-
-.column-round {
-    background-color: #f8f8f8;
+button {
+    border: none;
+    border-radius: 15px;
+    transition: transform 0.2s;
 }
+
+button:hover {
+    transform: scale(1.1);
+}
+
 
 .column-score {
     position: relative;
@@ -122,11 +141,105 @@ th:last-of-type {
     width: 35px;
 }
 
+.card-player-hand {
+    width: 110px;
+    height: 150px;
+    border-radius: 15px;
+}
+
+#player_hand, #announce {
+    display: flex;
+    gap: 10px;
+}
+
+button {
+    background-color: white;
+}
+
+.button-container-announce {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 40px;
+}
+
+#announce-button {
+    width: 50px;
+    height: 50px;
+    background-color: #5eb5e0;
+}
+
+.fold {
+    background-image: url('/public/images/table.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    height: 690px;
+    padding: 20px;
+}
+
+.table {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.folded-card {
+    position: absolute; /* Position absolue pour les cartes pliées */
+    width: 100px; /* Ajustez la taille des cartes selon vos besoins */
+    height: 140px; /* Ajustez la taille des cartes selon vos besoins */
+    margin: 10px;
+    transform: rotate(-20deg); /* Inclinez la carte pour l'effet de pli */
+    background-color: #f8f8f8;
+    border-radius: 5px;
+    padding: 5px;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.folded-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.card {
+    position: relative;
+    width: 100px; /* Ajustez la taille des cartes selon vos besoins */
+    height: 140px; /* Ajustez la taille des cartes selon vos besoins */
+    margin-right: 40px; /* Ajoutez une marge à droite de chaque carte */
+}
+
+
+.player-name {
+    position: absolute;
+    top: 5px; /* Placez le nom du joueur en haut */
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    width: 100%;
+}
+
+
 /* For SmartPhone and Tablet */
 @media screen and (max-width: 860px) {
     .container {
         flex-direction: column;
     }
+
+    #player-hand {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    #player-hand button {
+        width: 23%;
+        margin: 5px;
+    }
+
 
     .players-info, .score-container {
         width: 100%;

@@ -384,6 +384,7 @@ class SkullKing
             'card_mermaid' => $card->getMermaidName(),
             'card_color' => $card->getColor(),
             'card_id' => $card->getId(),
+            'prop_time' => microtime(true),
         );
     }
 
