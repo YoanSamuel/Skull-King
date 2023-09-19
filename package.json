@@ -28,6 +28,7 @@
     },
     "dependencies": {
         "cssnano": "^6.0.1",
-        "postcss-loader": "^7.3.3"
+        "postcss-loader": "^7.3.3",
+        "webfontloader": "^1.6.28"
     }
 }

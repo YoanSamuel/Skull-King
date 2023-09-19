@@ -318,8 +318,6 @@ class SkullKing
 
     private function prepareNextRound(): void
     {
-        //set score in players
-        // creer fonction resolve_score
 
         $this->nbRound += 1;
 
@@ -405,7 +403,6 @@ class SkullKing
 
     }
 
-// first player id a set et ajouter en base de donnés et sort de la fold en fonction du first player id et no du current player id
     public function getFoldResults(): Collection
     {
         return $this->foldResults;

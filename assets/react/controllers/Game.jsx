@@ -1,4 +1,6 @@
 import React, {useEffect, useState} from 'react';
+import '/public/css/game.css';
+
 
 /**
  *
@@ -17,7 +19,7 @@ export default function ({
 
     const [skullState, setSkullState] = useState(skull);
     const [blockPlayCard, setBlockPlayCard] = useState(false);
-
+    const [error, setError] = useState(null);
     let currentPlayer = skullState.players.find((player) => player.userId === currentUserId)
 
     const onPlayerAnnounced = (data) => {
@@ -50,7 +52,7 @@ export default function ({
         if (!response.ok) {
             //todo player display message error
             console.log(body);
-            throw new Error('Issue fetching get Skull');
+            setError(error.message);
         }
         return body;
 
@@ -58,13 +60,17 @@ export default function ({
 
     const onCardPlayed = async (eventData) => {
 
-        const skullKing = await getSkullKing(eventData.gameId)
+        const skullKing = await getSkullKing(eventData.gameId);
+        console.log(skullState);
         setSkullState((oldSkull) => {
             return ({
                 ...skullKing,
-                fold: oldSkull.fold.concat({id: eventData.cardId, playerId: eventData.playerId})
+                fold: oldSkull.fold.concat({
+                    id: eventData.cardId,
+                    playerId: eventData.playerId,
+                    playerName: eventData.playerName
+                })
             });
-
         });
 
         if (skullKing.fold.length === 0) {
@@ -72,7 +78,7 @@ export default function ({
             window.setTimeout(() => {
                 setSkullState(skullKing);
                 setBlockPlayCard(false);
-            }, 5000)
+            }, 4000)
         }
 
 
@@ -112,116 +118,131 @@ export default function ({
         };
     }, [])
 
-
     function displayPlayerAnnounce(player) {
         if (!player.announce && player.announce !== 0) {
             return 'En attente...';
         }
 
         if (player.userId === currentUserId) {
-            return `Annonce : ${player.announce}, Score : ${player.score}`;
+            return `Annonce : ${player.announce}`;
         }
 
         if (skullState.gameState !== 'ANNOUNCE') {
-            return `Annonce : ${player.announce}, Score : ${player.score}`;
+            return `Annonce : ${player.announce}`;
         }
 
         return 'A voté, en attente des autres joueurs.';
     }
 
 
-    async function playCard(playerId, card) {
+    const playCard = async (playerId, card) => {
 
         const url = `/game/${skullState.id}/player/${playerId}/playcard/${card.id}`;
-        const response = await fetch(url, {
-            method: "POST",
-        });
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+            });
 
-        const body = await response.json();
-        if (!response.ok) {
-            //todo player display message error
-            console.log(body);
-            throw new Error('Issue fetching play card');
+            if (!response.ok) {
+                const errorMessage = await response.json();
+                console.log(errorMessage);
+                throw new Error(errorMessage.message);
+            }
+
+            const body = await response.json();
+        } catch (error) {
+            setError(error.message);
+            setTimeout(() => {
+                setError(null);
+            }, 3000);
         }
+    };
 
-
-    }
 
     return <div>
+        <div className="container">
+            <div className="players-info">
+                {error && <div className={`error-message ${error ? 'show' : ''}`}>{error}</div>}
 
-        {
-            skullState.players.map((player) => {
-                return <div key={player.id}>
-                    <p>{player.name}</p>
-                    <p>{player.id}</p>
-                    <p>Annonce: {displayPlayerAnnounce(player)}</p>
+                {
+                    skullState.players.map((player) => {
+                        return <div key={player.id} className="player-card">
+                            <p>{player.name}</p>
+                            <p>{displayPlayerAnnounce(player)}</p>
+                        </div>
+                    })
+                }
+                {
+                    (skullState.gameState === 'ANNOUNCE') && announceValues.map((announce) => {
+                        return <form key={announce} action={`/game/${skullState.id}/announce/${announce}`} method="POST">
+                            <button type="submit"> {announce} </button>
+                        </form>
+                    })
+
+                }
+                <p> Votre main : </p>
+                <div id="player_hand">
+                    {currentPlayer.cards.map((card, index) => {
+                        return (skullState.gameState === 'PLAYCARD') ?
+                            <form key={`${card.id}_${index}`}
+                                  onSubmit={(event) => {
+                                      event.preventDefault();
+                                      playCard(currentUserId, card);
+                                  }}>
+                                <button type="submit" disabled={blockPlayCard}> {card.id}</button>
+                            </form>
+                            : <span key={`${card.id}_${index}`}>{card.id} </span>
+                    })
+                    }
                 </div>
-            })
-        }
-        {
-            (skullState.gameState === 'ANNOUNCE') && announceValues.map((announce) => {
-                return <form key={announce} action={`/game/${skullState.id}/announce/${announce}`} method="POST">
-                    <button type="submit"> {announce} </button>
-                </form>
-            })
+                <div className="fold">
+                    <h2>LA FOLD</h2>
+                    <ul>
+                        {skullState.fold.map((card) => {
+                            const playingPlayer = skullState.players.find(p => p.id === String(card.playerId));
+                            const playerName = playingPlayer ? playingPlayer.name : "Joueur inconnu";
 
-        }
-        <p> Votre main : </p>
-        <div id="player_hand">
-            {currentPlayer.cards.map((card, index) => {
-                return (skullState.gameState === 'PLAYCARD') ?
-                    <form key={`${card.id}_${index}`}
-                          onSubmit={(event) => {
-                              event.preventDefault();
-                              playCard(currentUserId, card);
-                          }}>
-                        <button type="submit" disabled={blockPlayCard}> {card.id}</button>
-                    </form>
-                    : <span key={`${card.id}_${index}`}>{card.id} </span>
-            })
-            }
-        </div>
-        <div>
-            <h2>LA FOLD DE SES MORTS</h2>
-            <ul>
-                {skullState.fold.map((card) =>
-                    (
-                        <li key={card.id}>
-                            {card.playerId}: {card.id}
-                        </li>
-                    ))}
-            </ul>
-        </div>
-        <div>
-            <h2>SCORE</h2>
-            <table>
-                <thead>
-                <tr>
-                    <th key="round/player"> Round/Players</th>
-                    {Object.keys(skullState.scoreBoard).map((playerId) => <th key={playerId}>{playerId}</th>)}
-                </tr>
-                </thead>
-                <tbody>
-                {[...Array(10).keys()].map((roundNumber) => <tr key={roundNumber + 1}>
-                    <td>{roundNumber + 1}</td>
-                    {Object.keys(skullState.scoreBoard).map((playerId) => <td key={`${playerId}_${roundNumber}`}>
-                        {!!skullState.scoreBoard[playerId] && !!skullState.scoreBoard[playerId][roundNumber]
-                            ? <div>
-                                <span>Announced : {skullState.scoreBoard[playerId][roundNumber].announced} </span>
-                                <span>Done : {skullState.scoreBoard[playerId][roundNumber].done} </span>
-                                <span>Potential Bonus : {skullState.scoreBoard[playerId][roundNumber].potentialBonus} </span>
-                                {roundNumber + 1 < skullState.roundNumber &&
-                                    <span>Score : {scoreByPlayer(roundNumber + 1, playerId)} </span>
-                                }
-                            </div>
-                            : "----"}
-                    </td>)}
+                            return (
+                                <li key={card.id}>
 
-                </tr>)}
-                </tbody>
-            </table>
-        </div>
+                                    {card.playerId} {playerName}: {card.id}
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </div>
+            </div>
 
+            <div className="score-container">
+                <table className="score-table">
+                    <thead>
+                    <tr>
+                        <th key="round/player" className="thead-round-players"> Round/Players</th>
+                        {Object.keys(skullState.scoreBoard).map((playerId) => <th key={playerId}>{playerId}</th>)}
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {[...Array(10).keys()].map((roundNumber) => <tr key={roundNumber + 1} className="column-round">
+                        <td>{roundNumber + 1}</td>
+                        {Object.keys(skullState.scoreBoard).map((playerId) => <td key={`${playerId}_${roundNumber}`}
+                                                                                  className="column-score">
+                            {!!skullState.scoreBoard[playerId] && !!skullState.scoreBoard[playerId][roundNumber]
+                                ? <div className="score-cell">
+                                    <span>Annonce : {skullState.scoreBoard[playerId][roundNumber].announced}
+                                        Pli : {skullState.scoreBoard[playerId][roundNumber].done} </span>
+                                    <span>Potentiel Bonus : {skullState.scoreBoard[playerId][roundNumber].potentialBonus} </span>
+                                    {roundNumber + 1 < skullState.roundNumber &&
+                                        <span>Score : {scoreByPlayer(roundNumber + 1, playerId)} </span>
+                                    }
+                                </div>
+                                : "----"}
+                        </td>)}
+
+                    </tr>)}
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
     </div>
 

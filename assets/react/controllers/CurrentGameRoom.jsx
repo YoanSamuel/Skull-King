@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import './styles/current_gameroom.css';
 
 
 export default function ({users, skullkingid, pathEnterGameRoom, pathCurrentGame, eventSourceUrl}) {

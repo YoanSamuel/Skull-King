@@ -95,6 +95,9 @@ class Fold
                 return $acc;
             }
 
+            // resoudre conflit carte couleur => ordre pas bon fold juste par contre getSortedFoldByPlayerId
+            // get skullking a l'annonce
+            // faire le style
 
         });
     }
