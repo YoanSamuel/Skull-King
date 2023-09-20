@@ -306,7 +306,7 @@ class SkullKing
         return $this;
     }
 
-    public function getCurrentPlayerId(): int
+    public function getCurrentPlayerId(): ?int
     {
         return $this->currentPlayerId;
     }
