@@ -26,7 +26,7 @@ class FoldResolverTest extends TestCase
                     "card_pirate" => null,
                     "card_mermaid" => null,
                     "card_color" => "RED",
-                    "card_id" => "2_RED",
+                    "card_id" => "RED_2",
                 ],
                 [
                     "player_id" => 2,
@@ -37,7 +37,7 @@ class FoldResolverTest extends TestCase
                     "card_pirate" => null,
                     "card_mermaid" => null,
                     "card_color" => "BLACK",
-                    "card_id" => "11_BLACK",
+                    "card_id" => "BLACK_11",
                 ]
             ]);
 
@@ -55,7 +55,7 @@ class FoldResolverTest extends TestCase
                 "card_pirate" => null,
                 "card_mermaid" => null,
                 "card_color" => "RED",
-                "card_id" => "12_RED",
+                "card_id" => "RED_12",
             ],
             [
                 "player_id" => 2,
@@ -66,7 +66,7 @@ class FoldResolverTest extends TestCase
                 "card_pirate" => null,
                 "card_mermaid" => null,
                 "card_color" => "BLUE",
-                "card_id" => "11_BLUE",
+                "card_id" => "BLUE_11",
             ]
         ]);
 
@@ -182,10 +182,10 @@ class FoldResolverTest extends TestCase
 
 
         $result = $fold->resolve();
-        $this->assertEquals($result, new FoldResolved(new CardInFold("11_BLACK", 2)));
+        $this->assertEquals($result, new FoldResolved(new CardInFold("BLACK_11", 2)));
 
         $result1 = $fold1->resolve();
-        $this->assertEquals($result1, new FoldResolved(new CardInFold("12_RED", 1)));
+        $this->assertEquals($result1, new FoldResolved(new CardInFold("RED_12", 1)));
 
         $result2 = $fold2->resolve();
         $this->assertEquals($result2, new FoldResolved(new CardInFold("MONIQUE_MERMAID", 2), 50));
@@ -249,7 +249,7 @@ class FoldResolverTest extends TestCase
                     "card_value" => "4",
                     "card_pirate" => null,
                     "card_color" => "BLACK",
-                    "card_id" => "4_BLACK",
+                    "card_id" => "BLACK_4",
                 ],
                 [
                     "player_id" => 1,
@@ -259,13 +259,13 @@ class FoldResolverTest extends TestCase
                     "card_value" => "9",
                     "card_pirate" => null,
                     "card_color" => "BLACK",
-                    "card_id" => "9_BLACK",
+                    "card_id" => "BLACK_9",
                 ],
 
             ]);
 
         $result5 = $fold5->resolve();
-        $this->assertEquals($result5, new FoldResolved(new CardInFold("9_BLACK", 1)));
+        $this->assertEquals($result5, new FoldResolved(new CardInFold("BLACK_9", 1)));
     }
 
 
