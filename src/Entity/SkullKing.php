@@ -320,6 +320,11 @@ class SkullKing
     {
 
         $this->nbRound += 1;
+        //ENDGAME 
+        if ($this->nbRound > 10) {
+            $this->state = SkullKingPhase::GAMEOVER->value;
+            return;
+        }
 
         $this->state = SkullKingPhase::ANNOUNCE->value;
         $deck = new Deck();

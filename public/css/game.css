@@ -5,6 +5,7 @@
     font-weight: bold;
 }
 
+
 .container {
     display: flex;
     width: 100%;
@@ -26,12 +27,13 @@
 }
 
 .player-card {
+    display: inline-block;
     border: 1px solid #ccc;
-    width: 25%;
+    width: 20%;
     border-bottom: 7px solid #3498db;
     background-color: #e39e09;
-    padding: 10px;
-    margin: 10px;
+    padding: 5px;
+    margin: 5px;
     transition: transform 0.2s;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -85,7 +87,7 @@
     top: 0;
     left: 0;
     width: 100%;
-    height: 90%;
+    height: 85%;
     background-image: url('/public/images/score.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -108,6 +110,7 @@
 
 button {
     border: none;
+    background-color: white;
     border-radius: 15px;
     transition: transform 0.2s;
 }
@@ -151,10 +154,6 @@ button:hover {
     gap: 10px;
 }
 
-button {
-    background-color: white;
-}
-
 .button-container-announce {
     display: flex;
     gap: 10px;
@@ -165,7 +164,8 @@ button {
 #announce-button {
     width: 50px;
     height: 50px;
-    background-color: #5eb5e0;
+    font-weight: bold;
+    background-color: #F0D9A2;
 }
 
 .fold {
@@ -221,6 +221,75 @@ button {
     width: 100%;
 }
 
+/* Style pour la modal */
+.game-over-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+}
+
+/* Style pour l'overlay de la modal */
+.game-over-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+.game-over-modal h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.game-over-modal p {
+    font-size: 16px;
+}
+
+.game-over-modal .close-button {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #555;
+}
+
+.button-back {
+    background-color: #e39e09;
+    color: #ffffff;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: transform 0.2s;
+    margin: 10px;
+    display: inline-block;
+}
+
+.button-back a {
+    text-decoration: none;
+    color: white;
+}
+
+.button-back :hover {
+    transform: scale(1.1);
+}
 
 /* For SmartPhone and Tablet */
 @media screen and (max-width: 860px) {
@@ -256,5 +325,9 @@ button {
     .column-score .score-cell span {
         font-size: 10px;
         margin-bottom: 5px;
+    }
+
+    .background-image {
+        height: 105%;
     }
 }

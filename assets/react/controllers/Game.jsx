@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import ReactModal from 'react-modal';
 import '/public/css/game.css';
 
 
@@ -20,7 +21,12 @@ export default function ({
     const [skullState, setSkullState] = useState(skull);
     const [blockPlayCard, setBlockPlayCard] = useState(false);
     const [error, setError] = useState(null);
+    const [showGameOverModal, setShowGameOverModal] = useState(false);
     let currentPlayer = skullState.players.find((player) => player.userId === currentUserId)
+    console.log(skullState);
+    const handleCloseGameOverModal = () => {
+        setShowGameOverModal(false);
+    }
 
     const onPlayerAnnounced = (data) => {
 
@@ -159,7 +165,7 @@ export default function ({
     };
 
 
-    return <div id="body">
+    return <div>
         <div className="container">
             <div className="players-info">
                 {error && <div className={`error-message ${error ? 'show' : ''}`}>{error}</div>}
@@ -172,9 +178,6 @@ export default function ({
                         </div>
                     })
                 }
-                <div className="turn-indicator">
-                    <p>C'est à {skull.currentPlayerTurnId} de jouer.</p>
-                </div>
                 <div className="button-container-announce">
 
                     {
@@ -209,7 +212,6 @@ export default function ({
                     }
                 </div>
                 <div className="fold">
-                    <h2>LA FOLD</h2>
                     <div className="table">
                         {skullState.fold.map((card) => {
                             const playingPlayer = skullState.players.find(p => p.id === String(card.playerId));
@@ -227,6 +229,7 @@ export default function ({
                         })}
                     </div>
                 </div>
+
             </div>
 
             <div className="score-container">
@@ -263,6 +266,23 @@ export default function ({
                 <div className="background-image"></div>
             </div>
         </div>
+
+        <ReactModal
+            isOpen={skullState.gameState === 'GAMEOVER'}
+            onRequestClose={handleCloseGameOverModal}
+            className="game-over-modal"
+            overlayClassName="game-over-overlay"
+        >
+            <div className="game-over">
+
+                <button className="button-back"><a href="/game/room">
+                    Retourner à la salle de jeu
+                </a>
+                </button>
+                <h1>Partie terminée</h1>
+                <p>Le joueur gagnant est Billy</p>
+            </div>
+        </ReactModal>
 
     </div>
 

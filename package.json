@@ -29,6 +29,8 @@
     "dependencies": {
         "cssnano": "^6.0.1",
         "postcss-loader": "^7.3.3",
+        "react-modal": "^3.16.1",
+        "react-router-dom": "^6.16.0",
         "webfontloader": "^1.6.28"
     }
 }

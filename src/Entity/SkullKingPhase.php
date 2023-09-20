@@ -7,4 +7,5 @@ enum SkullKingPhase: string
     case ANNOUNCE = 'ANNOUNCE';
     case PLAYCARD = 'PLAYCARD';
     case RESOLVEFOLD = 'RESOLVEFOLD';
+    case GAMEOVER = 'GAMEOVER';
 }
