@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import '/public/css/current_gameroom.css';
 
-
 export default function ({users, skullkingid, pathEnterGameRoom, pathCurrentGame, eventSourceUrl}) {
 
     const [usersState, setUsersState] = useState(users);

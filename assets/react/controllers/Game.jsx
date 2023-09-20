@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import '/public/css/game.css';
 
 
 /**
@@ -158,23 +159,24 @@ export default function ({
     };
 
 
-    return <div>
+    return <div id="body">
         <div className="container">
             <div className="players-info">
                 {error && <div className={`error-message ${error ? 'show' : ''}`}>{error}</div>}
 
-                {/*{*/}
-                {/*    skullState.players.map((player) => {*/}
-                {/*        return <div key={player.id} className="player-card">*/}
-                {/*            <p>{player.name}</p>*/}
-                {/*            <p>{displayPlayerAnnounce(player)}</p>*/}
-                {/*        </div>*/}
-                {/*    })*/}
-                {/*}*/}
+                {
+                    skullState.players.map((player) => {
+                        return <div key={player.id} className="player-card">
+                            <p>{player.name}</p>
+                            <p>{displayPlayerAnnounce(player)}</p>
+                        </div>
+                    })
+                }
                 <div className="turn-indicator">
                     <p>C'est à {skull.currentPlayerTurnId} de jouer.</p>
                 </div>
                 <div className="button-container-announce">
+
                     {
                         (skullState.gameState === 'ANNOUNCE') && announceValues.map((announce) => {
                             return <form key={announce} action={`/game/${skullState.id}/announce/${announce}`}
