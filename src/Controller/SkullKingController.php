@@ -103,7 +103,7 @@ class SkullKingController extends AbstractController
 
         } catch (OptimisticLockException $e) {
 
-            return $this->redirectToRoute('current_game', ['id' => $id, 'error' => true]);
+            return $this->redirectToRoute('current_game', ['id' => $id, 'error' => $e->getMessage()]);
         }
 
 
@@ -132,7 +132,6 @@ class SkullKingController extends AbstractController
                 'gameId' => $skull->getId()
 
             ])));
-
 
             return new JsonResponse(null, 200);
 

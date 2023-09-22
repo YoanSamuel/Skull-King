@@ -9,6 +9,7 @@ class CardDTO
     public string $cardType;
     public string $id;
     public ?int $playerId;
+    public int $proptime;
     public ?string $color;
     public ?string $pirateName;
     public ?string $value;
@@ -19,6 +20,7 @@ class CardDTO
         $this->cardType = $card->getCardType();
         $this->id = $card->getId();
         $this->playerId = $playerId;
+        $this->proptime = microtime(true);
         $this->color = $card->getColor();
         $this->pirateName = $card->getPirateName();
         $this->value = $card->getValue();

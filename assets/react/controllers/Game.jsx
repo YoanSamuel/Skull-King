@@ -1,14 +1,13 @@
 import React, {useEffect, useState} from 'react';
-import ReactModal from 'react-modal';
 import '/public/css/game.css';
-
+import ReactModal from 'react-modal';
 
 /**
  *
  * @param announceValues
  * @param eventSourceUrl
  * @param currentUserId
- * @param {{players, gameState, fold, id}} skull
+ * @param {{players, gameState, fold, id, currentPlayerId}} skull
  * @returns {Element}
  */
 export default function ({
@@ -21,11 +20,44 @@ export default function ({
     const [skullState, setSkullState] = useState(skull);
     const [blockPlayCard, setBlockPlayCard] = useState(false);
     const [error, setError] = useState(null);
-    const [showGameOverModal, setShowGameOverModal] = useState(false);
-    let currentPlayer = skullState.players.find((player) => player.userId === currentUserId)
-    console.log(skullState);
+    const [winMessageFold, setWinMessageFold] = useState(null);
+    let currentPlayer = skullState.players.find((player) => player.userId === currentUserId);
+
+
     const handleCloseGameOverModal = () => {
         setShowGameOverModal(false);
+    }
+
+    const calculateTotalScore = (playerId) => {
+        let totalScore = 0;
+
+        for (let i = 0; i < 10; i++) {
+            if (skullState.scoreBoard[playerId] && skullState.scoreBoard[playerId][i]) {
+                totalScore += skullState.scoreBoard[playerId][i].score;
+            }
+        }
+
+        return totalScore;
+    }
+
+    const findWinner = () => {
+        if (skullState.gameState !== 'GAMEOVER') {
+            return null;
+        }
+        let winner = null;
+        let maxScore = -1;
+
+        skullState.players.forEach((player) => {
+            const playerId = player.id;
+            const totalScore = calculateTotalScore(playerId);
+
+            if (totalScore > maxScore) {
+                maxScore = totalScore;
+                winner = player;
+            }
+        });
+
+        return winner;
     }
 
     const onPlayerAnnounced = (data) => {
@@ -38,7 +70,6 @@ export default function ({
                     return {
                         ...player,
                         announce: parseInt(data.announce),
-                        score: data.score,
                     }
                 }
 
@@ -56,8 +87,6 @@ export default function ({
 
         const body = await response.json();
         if (!response.ok) {
-            //todo player display message error
-            console.log(body);
             setError(error.message);
         }
         return body;
@@ -67,24 +96,28 @@ export default function ({
     const onCardPlayed = async (eventData) => {
 
         const skullKing = await getSkullKing(eventData.gameId);
-        console.log(skullState);
+
         setSkullState((oldSkull) => {
             return ({
                 ...skullKing,
                 fold: oldSkull.fold.concat({
                     id: eventData.cardId,
                     playerId: eventData.playerId,
-                    playerName: eventData.playerName
                 })
             });
         });
-
         if (skullKing.fold.length === 0) {
+
             setBlockPlayCard(true);
+            const currentPlayerId = skullKing.currentPlayerId;
+            const winnerPlayerTurn = skullState.players.find(player => player.id === String(currentPlayerId));
+            setWinMessageFold(winnerPlayerTurn.name);
+
             window.setTimeout(() => {
                 setSkullState(skullKing);
                 setBlockPlayCard(false);
-            }, 4000)
+                setWinMessageFold(null);
+            }, 3000)
         }
 
 
@@ -151,11 +184,9 @@ export default function ({
 
             if (!response.ok) {
                 const errorMessage = await response.json();
-                console.log(errorMessage);
                 throw new Error(errorMessage.message);
             }
 
-            const body = await response.json();
         } catch (error) {
             setError(error.message);
             setTimeout(() => {
@@ -169,7 +200,11 @@ export default function ({
         <div className="container">
             <div className="players-info">
                 {error && <div className={`error-message ${error ? 'show' : ''}`}>{error}</div>}
-
+                {winMessageFold && (
+                    <div className={`winner-message`}>
+                        Le joueur gagnant est {winMessageFold}
+                    </div>
+                )}
                 {
                     skullState.players.map((player) => {
                         return <div key={player.id} className="player-card">
@@ -232,7 +267,7 @@ export default function ({
 
             </div>
 
-            <div className="score-container">
+            <div className="score-container score-table-container">
                 <table className="score-table">
                     <thead>
                     <tr>
@@ -268,7 +303,6 @@ export default function ({
         </div>
 
         <ReactModal
-            isOpen={skullState.gameState === 'GAMEOVER'}
             onRequestClose={handleCloseGameOverModal}
             className="game-over-modal"
             overlayClassName="game-over-overlay"
@@ -280,7 +314,9 @@ export default function ({
                 </a>
                 </button>
                 <h1>Partie terminée</h1>
-                <p>Le joueur gagnant est Billy</p>
+                {skullState.gameState === 'GAMEOVER' && (
+                    <p>Le joueur gagnant est {findWinner().name}</p>
+                )}
             </div>
         </ReactModal>
 

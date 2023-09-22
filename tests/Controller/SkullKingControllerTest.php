@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\SkullKing;
 use App\Repository\SkullKingRepository;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -61,7 +62,8 @@ class SkullKingControllerTest extends WebTestCase
     }
 
     /**
-     * @param KernelBrowser $client
+     * @param string $username
+     * @param Uuid $userId
      * @return KernelBrowser
      */
     public function initializeUser(string $username, Uuid $userId): KernelBrowser

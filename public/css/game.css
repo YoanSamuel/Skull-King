@@ -1,12 +1,14 @@
 @font-face {
     font-family: "IM Fell English SC";
-    src: local("IM Fell English SC"),
-    url('/public/fonts/im-fell-english-sc.ttf') format("truetype");
+    src: url('/public/fonts/im-fell-english-sc.ttf') format("truetype");
     font-weight: bold;
 }
 
 
 .container {
+    margin: -10px;
+    font-family: 'IM Fell English SC', serif;
+    background-color: rgba(0, 0, 0, 0.45);
     display: flex;
     width: 100%;
     justify-content: space-between;
@@ -57,6 +59,7 @@
 .error-message {
     position: fixed;
     font-weight: bold;
+    font-size: x-large;
     top: 0;
     left: 0;
     right: 0;
@@ -72,7 +75,30 @@
     transform: translateY(0);
 }
 
+@keyframes slideIn {
+    from {
+        transform: translateX(-100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+
+.winner-message {
+    position: fixed;
+    font-weight: bold;
+    top: 0;
+    left: 0;
+    background-color: #00e676;
+    color: #000000;
+    padding: 10px;
+    text-align: center;
+    font-size: x-large;
+    animation: slideIn 0.5s forwards;
+}
+
 .score-container {
+    filter: brightness(1.2);
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -80,14 +106,7 @@
     position: relative;
     width: 40%;
     margin: 0;
-}
-
-.background-image {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 85%;
+    background-color: transparent;
     background-image: url('/public/images/score.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
@@ -95,7 +114,25 @@
     z-index: -1;
 }
 
+.score-table-container {
+    background-color: transparent;
+}
+
+/*.background-image {*/
+/*    position: absolute;*/
+/*    top: 0;*/
+/*    left: 0;*/
+/*    width: 100%;*/
+/*    height: 85%;*/
+/*    !*background-image: url('/public/images/score.png');*!*/
+/*    !*background-size: 100% 100%;*!*/
+/*    !*background-repeat: no-repeat;*!*/
+/*    !*background-position: center;*!*/
+/*    !*z-index: -1;*!*/
+/*}*/
+
 .score-table {
+    background-color: transparent;
     border-radius: 5px;
     width: 90%;
     margin-top: 50px;
@@ -125,6 +162,11 @@ button:hover {
     height: 50px;
 }
 
+.column-round {
+    border-bottom: 1px solid black;
+    padding: 5px;
+}
+
 .column-score .score-cell {
     position: absolute;
     top: 50%;
@@ -135,8 +177,8 @@ button:hover {
 
 .score-cell span {
     display: block;
-    font-size: 12px;
-    margin-bottom: 10px;
+    font-size: 18px;
+
 }
 
 .thead-round-players {
@@ -174,7 +216,8 @@ button:hover {
     background-repeat: no-repeat;
     background-position: center center;
     height: 690px;
-    padding: 20px;
+    max-width: 800px;
+
 }
 
 .table {
@@ -185,11 +228,11 @@ button:hover {
 }
 
 .folded-card {
-    position: absolute; /* Position absolue pour les cartes pliées */
-    width: 100px; /* Ajustez la taille des cartes selon vos besoins */
-    height: 140px; /* Ajustez la taille des cartes selon vos besoins */
+    position: absolute;
+    width: 100px;
+    height: 140px;
     margin: 10px;
-    transform: rotate(-20deg); /* Inclinez la carte pour l'effet de pli */
+    transform: rotate(-20deg);
     background-color: #f8f8f8;
     border-radius: 5px;
     padding: 5px;
@@ -204,15 +247,15 @@ button:hover {
 
 .card {
     position: relative;
-    width: 100px; /* Ajustez la taille des cartes selon vos besoins */
-    height: 140px; /* Ajustez la taille des cartes selon vos besoins */
-    margin-right: 40px; /* Ajoutez une marge à droite de chaque carte */
+    width: 100px;
+    height: 140px;
+    margin-right: 40px;
 }
 
 
 .player-name {
     position: absolute;
-    top: 5px; /* Placez le nom du joueur en haut */
+    top: 5px;
     left: 50%;
     transform: translateX(-50%);
     text-align: center;
@@ -221,7 +264,6 @@ button:hover {
     width: 100%;
 }
 
-/* Style pour la modal */
 .game-over-modal {
     position: absolute;
     top: 50%;
@@ -235,7 +277,6 @@ button:hover {
     width: 100%;
 }
 
-/* Style pour l'overlay de la modal */
 .game-over-overlay {
     position: fixed;
     top: 0;

@@ -49,6 +49,7 @@ class SkullKing
     #[ORM\OneToMany(mappedBy: 'skullKing', targetEntity: FoldResult::class, cascade: ['persist', 'remove'], fetch: "EAGER", orphanRemoval: true)]
     private Collection $foldResults;
 
+
     /**
      * @throws Exception
      */
@@ -182,7 +183,7 @@ class SkullKing
         $hasTheColorAsked = $player->hasTheColorAsked($this->colorAsked);
 //        dd($this->colorAsked, $isColorAsked, $isCardPlayedColored, !$isCardPlayedSameColor, $hasTheColorAsked, !$isSpecialCard);
         if ($isColorAsked && $isCardPlayedColored && !$isCardPlayedSameColor && $hasTheColorAsked && !$isSpecialCard) {
-            throw new Exception('Tu TRICHEEEEEEEEEEEEEEEEEEEEES ' . $player->getName() . '!');
+            throw new Exception('Tu TRICHES ' . $player->getName() . '!');
         }
 
         $this->addCardInFold($player, $card);
@@ -242,7 +243,6 @@ class SkullKing
 
     public function resolveFold(): ?WinnerWithPotentialBonus
     {
-
         $foldResolved = $this->getFold()->resolve();
         $cardInFold = $foldResolved->getCardInFold();
         if (is_null($cardInFold)) {

@@ -15,6 +15,7 @@ class SkullDTO
     public string $id;
     public array $fold;
     public array $players;
+    public ?int $currentPlayerId;
     public string $gameState;
     public array $scoreBoard = [];
     public int $roundNumber;
@@ -23,6 +24,7 @@ class SkullDTO
     public function __construct(SkullKing $skullKing, Uuid $currentUserId)
     {
         $this->id = $skullKing->getId();
+        $this->currentPlayerId = $skullKing->getCurrentPlayerId();
         $this->fold = $this->convertFoldDto($skullKing->getFold());
         $this->players = $skullKing->getPlayers()->map(fn(Player $player) => new PlayerDTO($player, $currentUserId)
         )->toArray();
