@@ -60,7 +60,6 @@ class SkullKingController extends AbstractController
             'skull' => new SkullDTO($skull, $userId),
             'topicName' => $topicName,
             'userId' => $userId,
-            'version' => $skull->getVersion(),
         ]);
     }
 

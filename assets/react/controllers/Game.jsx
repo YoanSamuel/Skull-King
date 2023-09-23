@@ -22,11 +22,7 @@ export default function ({
     const [error, setError] = useState(null);
     const [winMessageFold, setWinMessageFold] = useState(null);
     let currentPlayer = skullState.players.find((player) => player.userId === currentUserId);
-
-
-    const handleCloseGameOverModal = () => {
-        setShowGameOverModal(false);
-    }
+    
 
     const calculateTotalScore = (playerId) => {
         let totalScore = 0;

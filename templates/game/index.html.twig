@@ -7,12 +7,11 @@
 {% block title %}Hello SkullController!{% endblock %}
 
 {% block body %}
-    
+
     <div {{ react_component('Game', {
         'announceValues' :  announceValues,
         'eventSourceUrl': mercure(topicName, { subscribe: topicName }),
         'userId': userId,
-        'version': version,
         'skull': skull,
     }) }}>
 

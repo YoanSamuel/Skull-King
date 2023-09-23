@@ -9,18 +9,21 @@ class Fold
 {
     private Collection $fold;
 
-    public function __construct(array $sortedPlayersId, array $fold)
+    public function __construct(array $fold)
     {
-        $this->fold = new ArrayCollection();
-        foreach ($sortedPlayersId as $playerId) {
-            foreach ($fold as $cardInfo) {
+        $tmpFold = (new ArrayCollection($fold))->map(fn(array $cardInfo) => new CardInFold($cardInfo["card_id"], $cardInfo["player_id"], $cardInfo['prop_time'])
+        )->toArray();
 
-                if ($cardInfo["player_id"] == $playerId) {
+        usort($tmpFold, function (CardInFold $a, CardInFold $b) {
 
-                    $this->fold->add(new CardInFold($cardInfo["card_id"], $cardInfo["player_id"]));
-                }
+            if ($a->getPlayedAt() == $b->getPlayedAt()) {
+                return 1;
             }
-        }
+
+            return ($a->getPlayedAt() > $b->getPlayedAt()) ? 1 : -1;
+        });
+
+        $this->fold = new ArrayCollection($tmpFold);
     }
 
     public function getFold(): Collection
@@ -95,10 +98,11 @@ class Fold
                 return $acc;
             }
 
-            // resoudre conflit carte couleur => ordre pas bon fold juste par contre getSortedFoldByPlayerId
-            // get skullking a l'annonce
-            // faire le style
-
         });
+    }
+
+    public function hasAlReadyPlayed(Player $player): bool
+    {
+        return $this->fold->exists(fn(int $key, CardInFold $cardInFold) => $cardInFold->getPlayerId() == $player->getId());
     }
 }

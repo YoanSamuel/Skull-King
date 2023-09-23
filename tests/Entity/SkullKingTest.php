@@ -94,7 +94,9 @@ class SkullKingTest extends TestCase
 
         $game->playCard($firstGameRoomUser->getUserId(), $card->getId());
         $this->assertCount(1, $game->getFold()->getFold());
-        $this->assertEquals(new ArrayCollection([new CardInFold($card->getId(), $playerOne->getId())]), $game->getFold()->getFold());
+        $cardIdsInFold = $game->getFold()->getFold()->map(fn(CardInFold $cardInFold) => $cardInFold->getCard()->getId());
+        $this->assertContains($card->getId(), $cardIdsInFold);
+        $this->assertTrue($game->getFold()->hasAlReadyPlayed($playerOne));
 
         $this->assertEquals($playerTwo->getId(), $game->getCurrentPlayerId());
 

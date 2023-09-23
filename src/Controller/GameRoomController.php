@@ -44,13 +44,15 @@ class GameRoomController extends AbstractController
             return $this->redirectToRoute('showlogin');
 
         }
+
         $form = $this->createFormBuilder(null, ["method" => "POST"])
             ->add('Jouer', SubmitType::class)
             ->getForm();
 
-        $allRooms = $this->gameRoomRepository->findAllWithUsers();
+        $userId = new Uuid($request->cookies->get('userid'));
+        $allRooms = $this->gameRoomRepository->findAllAvailable($userId);
         foreach ($allRooms as $room) {
-            $room->setContainsCurrentUser(new Uuid($request->cookies->get('userid')));
+            $room->setContainsCurrentUser($userId);
         }
 
         return $this->render('game_room/index.html.twig', [

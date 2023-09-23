@@ -142,8 +142,7 @@ class SkullKing
 
     public function getFold(): Fold
     {
-        $foldSortedByPlayerId = $this->getSortedFoldByPlayerId();
-        return new Fold($foldSortedByPlayerId, $this->fold);
+        return new Fold($this->fold);
     }
 
     /**
@@ -158,7 +157,7 @@ class SkullKing
             throw new Exception('Ce joueur nexiste pas Billy!');
         }
 
-        if ($this->hasAlReadyPlayed($player)) {
+        if ($this->getFold()->hasAlReadyPlayed($player)) {
             throw new Exception('Tu ne peux pas jouer deux fois dans le même tour!');
         }
 
@@ -229,18 +228,6 @@ class SkullKing
     }
 
 
-    public function hasAlReadyPlayed(Player $player): bool
-    {
-
-        foreach ($this->fold as $cardPlayed) {
-            if ($cardPlayed['player_id'] == $player->getId()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-
     public function resolveFold(): ?WinnerWithPotentialBonus
     {
         $foldResolved = $this->getFold()->resolve();
@@ -268,14 +255,6 @@ class SkullKing
         return $playersArray;
     }
 
-    /**
-     * @param array $fold
-     */
-    public function setFold(array $fold): void
-    {
-        $this->fold = $fold;
-    }
-
 
     /**
      * @return string
@@ -285,35 +264,14 @@ class SkullKing
         return $this->state;
     }
 
-    public function getCreatedAt(): DateTimeImmutable
-    {
-        return $this->createdAt;
-    }
-
     public function setCreatedAt(DateTimeImmutable $createdAt): void
     {
         $this->createdAt = $createdAt;
     }
 
-    public function getVersion(): ?int
-    {
-        return $this->version;
-    }
-
-    public function setVersion($version): self
-    {
-        $this->version = $version;
-        return $this;
-    }
-
     public function getCurrentPlayerId(): ?int
     {
         return $this->currentPlayerId;
-    }
-
-    public function setCurrentPlayerId(int $currentPlayerId): void
-    {
-        $this->currentPlayerId = $currentPlayerId;
     }
 
     private function prepareNextRound(): void
@@ -343,11 +301,6 @@ class SkullKing
         $this->firstPlayerId = $this->nextPlayerId($this->firstPlayerId);
         $this->currentPlayerId = $this->firstPlayerId;
 
-    }
-
-    public function updateFirstPlayerId(): void
-    {
-        $this->setFirstPlayerId($this->nextPlayerId($this->firstPlayerId));
     }
 
 
@@ -389,44 +342,14 @@ class SkullKing
             'card_mermaid' => $card->getMermaidName(),
             'card_color' => $card->getColor(),
             'card_id' => $card->getId(),
-            'prop_time' => microtime(true),
+            'prop_time' => (new DateTimeImmutable())->format('U.u'),
         );
     }
 
 
-    /**
-     * @return int[]|null[]
-     */
-    public function getSortedFoldByPlayerId(): array
-    {
-        $id = null;
-        $foldSortedByPlayerId = [];
-        while ($id != $this->firstPlayerId) {
-            $foldSortedByPlayerId[] = $id == null ? $this->firstPlayerId : $id;
-            $id = $this->nextPlayerId($id == null ? $this->firstPlayerId : $id);
-        }
-        return $foldSortedByPlayerId;
-
-    }
-
     public function getFoldResults(): Collection
     {
         return $this->foldResults;
-    }
-
-    public function setFoldResults(Collection $foldResults): void
-    {
-        $this->foldResults = $foldResults;
-    }
-
-    public function getFirstPlayerId(): ?int
-    {
-        return $this->firstPlayerId;
-    }
-
-    public function setFirstPlayerId(?int $firstPlayerId): void
-    {
-        $this->firstPlayerId = $firstPlayerId;
     }
 
 }

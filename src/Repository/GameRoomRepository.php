@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\GameRoom;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
 
 /**
  * @extends ServiceEntityRepository<GameRoom>
@@ -38,11 +39,19 @@ class GameRoomRepository extends ServiceEntityRepository
         }
     }
 
-    public function findAllWithUsers(): array
+    public function findAllAvailable(Uuid $userId): array
     {
-        return $this->createQueryBuilder('gr')->addSelect(['gru'])
+        $qb = $this->createQueryBuilder('gr');
+        return $qb->addSelect(['gru'])
             ->leftJoin('gr.users', 'gru')
+            ->where($qb->expr()->orX(
+                $qb->expr()->isNull('gr.skullKing'),
+                $qb->expr()->eq('gru.userId', ':user_id')
+            ))
+            ->setParameter('user_id', $userId)
+            ->orderBy('gr.createdAt', 'DESC')
             ->getQuery()->getResult();
     }
+
 
 }
