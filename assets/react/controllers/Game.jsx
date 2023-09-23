@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import '/public/css/game.css';
 import ReactModal from 'react-modal';
 
 /**
@@ -22,7 +21,7 @@ export default function ({
     const [error, setError] = useState(null);
     const [winMessageFold, setWinMessageFold] = useState(null);
     let currentPlayer = skullState.players.find((player) => player.userId === currentUserId);
-    
+
 
     const calculateTotalScore = (playerId) => {
         let totalScore = 0;

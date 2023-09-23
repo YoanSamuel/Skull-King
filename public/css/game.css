@@ -1,13 +1,16 @@
 @font-face {
     font-family: "IM Fell English SC";
-    src: url('/public/fonts/im-fell-english-sc.ttf') format("truetype");
+    src: url('/fonts/im-fell-english-sc.ttf') format("truetype");
     font-weight: bold;
 }
 
+body {
+    font-family: 'IM Fell English SC', serif;
+}
 
 .container {
     margin: -10px;
-    font-family: 'IM Fell English SC', serif;
+
     background-color: rgba(0, 0, 0, 0.45);
     display: flex;
     width: 100%;
