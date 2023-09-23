@@ -94,7 +94,7 @@ class SkullKingController extends AbstractController
                 'status' => 'player_announced',
                 'userId' => $userId,
                 'announce' => $announce,
-                'gamePhase' => $skull->getState(),
+                'gameId' => $skull->getId()
 
             ])));
 

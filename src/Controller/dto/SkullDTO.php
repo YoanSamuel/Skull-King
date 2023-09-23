@@ -45,6 +45,12 @@ class SkullDTO
                 }
             }
         }
+
+        if ($skullKing->getFoldResults()->isEmpty()) {
+            foreach ($skullKing->getPlayers() as $player) {
+                $this->scoreBoard[$player->getId()] = [];
+            }
+        }
     }
 
     private function convertFoldDto(Fold $fold)

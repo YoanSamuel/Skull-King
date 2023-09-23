@@ -10,8 +10,6 @@ body {
 
 .container {
     margin: -10px;
-
-    background-color: rgba(0, 0, 0, 0.45);
     display: flex;
     width: 100%;
     justify-content: space-between;
@@ -110,7 +108,7 @@ body {
     width: 40%;
     margin: 0;
     background-color: transparent;
-    background-image: url('/public/images/score.png');
+    background-image: url('/images/score.png');
     background-size: 100% 100%;
     background-repeat: no-repeat;
     background-position: center;
@@ -214,7 +212,7 @@ button:hover {
 }
 
 .fold {
-    background-image: url('/public/images/table.png');
+    background-image: url('/images/table.png');
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center center;

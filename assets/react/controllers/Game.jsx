@@ -21,7 +21,7 @@ export default function ({
     const [error, setError] = useState(null);
     const [winMessageFold, setWinMessageFold] = useState(null);
     let currentPlayer = skullState.players.find((player) => player.userId === currentUserId);
-
+    console.log(skullState);
 
     const calculateTotalScore = (playerId) => {
         let totalScore = 0;
@@ -55,22 +55,11 @@ export default function ({
         return winner;
     }
 
-    const onPlayerAnnounced = (data) => {
+    const onPlayerAnnounced = async (eventData) => {
 
-        setSkullState((oldSkull) => ({
-            ...oldSkull,
-            gameState: data.gamePhase,
-            players: oldSkull.players.map((player) => {
-                if (player.userId === data.userId) {
-                    return {
-                        ...player,
-                        announce: parseInt(data.announce),
-                    }
-                }
 
-                return player;
-            })
-        }));
+        const skullKing = await getSkullKing(eventData.gameId);
+        setSkullState(skullKing);
     }
 
     const getSkullKing = async (skullId) => {
@@ -298,7 +287,7 @@ export default function ({
         </div>
 
         <ReactModal
-            onRequestClose={handleCloseGameOverModal}
+            onRequestClose={() => undefined}
             className="game-over-modal"
             overlayClassName="game-over-overlay"
         >
