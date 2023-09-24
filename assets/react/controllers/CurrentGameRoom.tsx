@@ -1,6 +1,19 @@
-import React, {useEffect, useState} from 'react';
+import {FC, useEffect, useState} from 'react';
 
-export default function ({users, skullkingid, pathEnterGameRoom, pathCurrentGame, eventSourceUrl}) {
+type User = {
+    userId: string;
+    userName: string;
+}
+
+type Props = {
+    users: User[];
+    skullkingid: string;
+    pathEnterGameRoom: string;
+    pathCurrentGame: string;
+    eventSourceUrl: string;
+}
+
+const CurrentGameRoom: FC<Props> = ({users, skullkingid, pathEnterGameRoom, pathCurrentGame, eventSourceUrl}) => {
 
     const [usersState, setUsersState] = useState(users);
 
@@ -47,3 +60,5 @@ export default function ({users, skullkingid, pathEnterGameRoom, pathCurrentGame
 
     </div>;
 }
+
+export default CurrentGameRoom;

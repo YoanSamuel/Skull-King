@@ -1,0 +1,42 @@
+.fold {
+    display: flex;
+    flex-wrap: wrap;
+    max-width: 500px;
+    width: 100%;
+    position: relative
+}
+
+.fold img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    object-fit: contain;
+    height: 100%;
+    width: auto;
+    z-index: 0
+}
+
+.fold-slot {
+    z-index: 1;
+    color: white;
+    min-height: 167px;
+    width: 33%;
+    display: flex;
+    text-align: center;
+    position: relative;
+}
+
+.fold-slot .player-info {
+    position: absolute;
+}
+
+@media (max-width: 576px) {
+
+    .fold-slot {
+        min-height: 250px;
+    }
+
+    .fold {
+        max-width: 750px;
+    }
+}
