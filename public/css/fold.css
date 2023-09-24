@@ -1,8 +1,8 @@
 .fold {
     display: flex;
     flex-wrap: wrap;
-    max-width: 500px;
-    width: 100%;
+    max-height: 510px;
+    max-width: 510px;
     position: relative
 }
 
@@ -20,6 +20,7 @@
     z-index: 1;
     color: white;
     min-height: 167px;
+    min-width: 167px;
     width: 33%;
     display: flex;
     text-align: center;
@@ -30,13 +31,16 @@
     position: absolute;
 }
 
-@media (max-width: 576px) {
+@media (max-width: 1500px) {
+    .fold {
+
+        max-height: 750px;
+        max-width: 750px;
+    }
 
     .fold-slot {
         min-height: 250px;
-    }
+        min-width: 250px;
 
-    .fold {
-        max-width: 750px;
     }
 }

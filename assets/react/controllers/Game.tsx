@@ -134,7 +134,7 @@ const Fold: FC<{ skullKing: SkullKing, currentUserId: string }> = ({skullKing, c
         return 'A voté, en attente des autres joueurs.';
     }
 
-    return <div className="table">
+    return <>
         {skullKing.fold.map((card) => {
             const playingPlayer = skullKing.players.find(p => p.id === card.playerId);
 
@@ -165,7 +165,7 @@ const Fold: FC<{ skullKing: SkullKing, currentUserId: string }> = ({skullKing, c
 
             </div>)}
         </div>
-    </div>
+    </>
 }
 
 const Game: FC<Props> = ({
@@ -332,41 +332,45 @@ const Game: FC<Props> = ({
             </div>
         )}
 
-        <Fold skullKing={skullState} currentUserId={currentUserId}/>
+        <div className="game-container">
+            <Fold skullKing={skullState} currentUserId={currentUserId}/>
 
-        <div className="button-container-announce">
+            <div className="button-container-announce">
 
-            {
-                (skullState.gameState === 'ANNOUNCE') && announceValues.map((announce) => {
-                    return <form key={announce} action={`/game/${skullState.id}/announce/${announce}`}
-                                 method="POST">
-                        <button type="submit" id="announce-button"> {announce} </button>
-                    </form>
-                })
+                {
+                    (skullState.gameState === 'ANNOUNCE') && announceValues.map((announce) => {
+                        return <form key={announce} action={`/game/${skullState.id}/announce/${announce}`}
+                                     method="POST">
+                            <button type="submit" id="announce-button"> {announce} </button>
+                        </form>
+                    })
 
-            }
-        </div>
-        <p> Votre main : </p>
-        <div id="player-hand">
-            {currentPlayer.cards.map((card, index) => {
-                return (skullState.gameState === 'PLAYCARD') ?
-                    <form key={`${card.id}_${index}`}
-                          onSubmit={(event) => {
-                              event.preventDefault();
-                              playCard(currentUserId, card);
-                          }}>
-                        <button type="submit" disabled={blockPlayCard}>
-                            <img src={`/images/game/cards/${card.id}.png`} alt={card.id}
-                                 className="card-player-hand"/>
-                        </button>
-                    </form>
-                    : <span key={`${card.id}_${index}`}>
+                }
+            </div>
+
+            <p> Votre main : </p>
+            <div id="player-hand">
+                {currentPlayer.cards.map((card, index) => {
+                    return (skullState.gameState === 'PLAYCARD') ?
+                        <form key={`${card.id}_${index}`}
+                              onSubmit={(event) => {
+                                  event.preventDefault();
+                                  playCard(currentUserId, card);
+                              }}>
+                            <button type="submit" disabled={blockPlayCard}>
+                                <img src={`/images/game/cards/${card.id}.png`} alt={card.id}
+                                     className="card-player-hand"/>
+                            </button>
+                        </form>
+                        : <span key={`${card.id}_${index}`}>
                                 <img src={`/images/game/cards/${card.id}.png`} alt={card.id}
                                      className="card-player-hand"/>
                             </span>
-            })
-            }
+                })
+                }
+            </div>
         </div>
+
 
         <div className="score-container score-table-container">
             <table className="score-table">
@@ -401,6 +405,7 @@ const Game: FC<Props> = ({
             </table>
             <div className="background-image"></div>
         </div>
+
         <ReactModal
             onRequestClose={() => undefined}
             className="game-over-modal"
