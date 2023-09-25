@@ -109,7 +109,7 @@ const Fold: FC<{ skullKing: SkullKing, currentUserId: string }> = ({skullKing, c
     const sixth = skullKing.players[5];
 
     const tableConfig = {
-        2: [cellOne(first), cellTwo(first), cellThree(first), cellFour(null), cellFive(null), cellSix(null), cellSeven(second), cellEight(second), cellNine(second)],
+        2: [cellOne(null), cellTwo(first), cellThree(null), cellFour(null), cellFive(null), cellSix(null), cellSeven(null), cellEight(second), cellNine(null)],
         3: [cellOne(null), cellTwo(first), cellThree(null), cellFour(null), cellFive(second), cellSix(null), cellSeven(third), cellEight(null), cellNine(null)],
         4: [cellOne(null), cellTwo(first), cellThree(null), cellFour(null), cellFive(second), cellSix(null), cellSeven(third), cellEight(null), cellNine(fourth)],
         5: [cellOne(first), cellTwo(null), cellThree(second), cellFour(third), cellFive(null), cellSix(fourth), cellSeven(null), cellEight(fifth), cellNine(null)],
@@ -135,19 +135,7 @@ const Fold: FC<{ skullKing: SkullKing, currentUserId: string }> = ({skullKing, c
     }
 
     return <>
-        {skullKing.fold.map((card) => {
-            const playingPlayer = skullKing.players.find(p => p.id === card.playerId);
 
-            return (
-                <div key={card.id} className="card folded-card">
-
-                    <span className="player-name">{playingPlayer?.name}</span>
-                    <img src={`/images/game/cards/${card.id}.png`}
-                         alt={card.id}
-                         className="card-player-hand"/>
-                </div>
-            );
-        })}
 
         <div className="fold">
             <img src="/images/table.png" alt="table"/>
@@ -160,6 +148,23 @@ const Fold: FC<{ skullKing: SkullKing, currentUserId: string }> = ({skullKing, c
                     : <div className="player-info" style={cell.position}>
                         <p>{cell.player.name}</p>
                         {displayPlayerAnnounce(cell.player)}
+
+                        {skullKing.fold.map((card) => {
+                            const playingPlayer = skullKing.players.find(p => p.id === String(card.playerId));
+                            if (!playingPlayer || cell.player.id != card.playerId) {
+                                return null;
+                            }
+
+                            return (
+                                <div key={card.id} className="card folded-card">
+                                    <span className="player-name">{playingPlayer?.name}</span>
+                                    <img src={`/images/game/cards/${card.id}.png`}
+                                         alt={card.id}
+                                    />
+                                </div>
+                            );
+                        })}
+
                     </div>
                 }
 
@@ -249,6 +254,7 @@ const Game: FC<Props> = ({
                 })
             });
         });
+
         if (skullKing.fold.length === 0) {
 
             setBlockPlayCard(true);
