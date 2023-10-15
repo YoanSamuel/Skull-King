@@ -10,16 +10,16 @@
     <h1>Register</h1>
 
     {{ form_start(registrationForm) }}
-        {{ form_row(registrationForm.email) }}
-        {{ form_row(registrationForm.plainPassword, {
-            label: 'Password'
-        }) }}
-        {{ form_row(registrationForm.agreeTerms) }}
+    {{ form_row(registrationForm.name) }}
+    {{ form_row(registrationForm.email) }}
+    {{ form_row(registrationForm.plainPassword, {
+        label: 'Password'
+    }) }}
 
-        <button type="submit" class="btn">Register</button>
+    <button type="submit" class="btn">Register</button>
     {{ form_end(registrationForm) }}
 
 
 
-    <div style="margin-top: 50px;"> <a href="/login" class ="btn">Déja Utilisateur? Connectez vous ! </a></div>
+    <div style="margin-top: 50px;"><a href="/login" class="btn">Déja Utilisateur? Connectez vous ! </a></div>
 {% endblock %}

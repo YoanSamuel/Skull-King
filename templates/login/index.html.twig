@@ -1,19 +1,37 @@
+{% extends 'base.html.twig' %}
+
 {% block head %}
     <link rel="stylesheet" href="{{ asset('css/login.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap" rel="stylesheet">
+    <meta name="description" content="Page d'accueil de l'application SkullKing"/>
 {% endblock %}
 
+{% block title %}Accueil SkullKing{% endblock %}
 
 
 {% block body %}
-    <div id="container-title">
-        <h1 id="login-title">Hello Pirate</h1>
+    <div id="container-form_login">
+
+
+        <form id="form_login" action="{{ path('app_login') }}" method="post">
+            <div><a href="/register" class="btn">Créer un compte ! </a></div>
+            
+            <label for="username">Email</label>
+            <input class="form_input" type="text" id="username" name="_username" value="{{ last_username }}">
+
+            <label for="password">Mot de passe</label>
+            <input class="form_input" type="password" id="password" name="_password">
+
+
+            <input type="hidden" name="_target_path" value="/game/room">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+            <button id="form_Entrer" type="submit">login</button>
+
+            {% if error %}
+                <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+            {% endif %}
+        </form>
     </div>
-    {% if error %}
-        <div>{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-    {% endif %}
-
-    <div id="container-form">{{ form(form) }}</div>
-
 
 {% endblock %}

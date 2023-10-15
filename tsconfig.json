@@ -9,7 +9,8 @@
       "dom",
       "es2015",
       "es2016"
-    ]
+    ],
+    "allowSyntheticDefaultImports": true
   },
   "exclude": [
     "vendor",

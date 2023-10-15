@@ -110,7 +110,7 @@ const Fold: FC<{ skullKing: SkullKing, currentUserId: string }> = ({skullKing, c
 
     const tableConfig = {
         2: [cellOne(null), cellTwo(first), cellThree(null), cellFour(null), cellFive(null), cellSix(null), cellSeven(null), cellEight(second), cellNine(null)],
-        3: [cellOne(null), cellTwo(first), cellThree(null), cellFour(null), cellFive(second), cellSix(null), cellSeven(third), cellEight(null), cellNine(null)],
+        3: [cellOne(null), cellTwo(first), cellThree(null), cellFour(null), cellFive(null), cellSix(null), cellSeven(third), cellEight(null), cellNine(second)],
         4: [cellOne(null), cellTwo(first), cellThree(null), cellFour(null), cellFive(second), cellSix(null), cellSeven(third), cellEight(null), cellNine(fourth)],
         5: [cellOne(first), cellTwo(null), cellThree(second), cellFour(third), cellFive(null), cellSix(fourth), cellSeven(null), cellEight(fifth), cellNine(null)],
         6: [cellOne(first), cellTwo(second), cellThree(third), cellFour(null), cellFive(null), cellSix(null), cellSeven(fourth), cellEight(fifth), cellNine(sixth)],
@@ -135,8 +135,6 @@ const Fold: FC<{ skullKing: SkullKing, currentUserId: string }> = ({skullKing, c
     }
 
     return <>
-
-
         <div className="fold">
             <img src="/images/table.png" alt="table"/>
             {config.map((cell, index) => <div key={index + 1} className="fold-slot" style={{
@@ -149,25 +147,24 @@ const Fold: FC<{ skullKing: SkullKing, currentUserId: string }> = ({skullKing, c
                         <p>{cell.player.name}</p>
                         {displayPlayerAnnounce(cell.player)}
 
-                        {skullKing.fold.map((card) => {
-                            const playingPlayer = skullKing.players.find(p => p.id === String(card.playerId));
-                            if (!playingPlayer || cell.player.id != card.playerId) {
-                                return null;
-                            }
+                        {skullKing.fold
+                            .map((card) => {
+                                const playingPlayer = skullKing.players.find(p => p.id === String(card.playerId));
+                                if (!playingPlayer || cell.player.id != card.playerId) {
+                                    return null;
+                                }
 
-                            return (
-                                <div key={card.id} className="card folded-card">
-                                    <span className="player-name">{playingPlayer?.name}</span>
-                                    <img src={`/images/game/cards/${card.id}.png`}
-                                         alt={card.id}
-                                    />
-                                </div>
-                            );
-                        })}
-
+                                return (
+                                    <div key={card.id} className="card folded-card">
+                                        <span className="player-name">{playingPlayer?.name}</span>
+                                        <img src={`/images/game/cards/${card.id}.png`}
+                                             alt={card.id}
+                                        />
+                                    </div>
+                                );
+                            })}
                     </div>
                 }
-
             </div>)}
         </div>
     </>
@@ -184,6 +181,7 @@ const Game: FC<Props> = ({
     const [blockPlayCard, setBlockPlayCard] = useState(false);
     const [error, setError] = useState(null);
     const [winMessageFold, setWinMessageFold] = useState(null);
+    const [modalIsOpen, setModalIsOpen] = useState(false);
     let currentPlayer = skullState.players.find((player) => player.userId === currentUserId);
     console.log(skullState);
 
@@ -200,7 +198,7 @@ const Game: FC<Props> = ({
     }
 
     const findWinner = () => {
-        if (skullState.gameState !== 'GAMEOVER') {
+        if (skullState.gameState != 'GAMEOVER') {
             return null;
         }
         let winner = null;
@@ -232,7 +230,10 @@ const Game: FC<Props> = ({
         const response = await fetch(url, {
             method: "GET",
         });
-
+        if (response.url.includes('login')) {
+            window.location.href = response.url;
+            return;
+        }
         const body = await response.json();
         if (!response.ok) {
             setError(error.message);
@@ -303,8 +304,12 @@ const Game: FC<Props> = ({
                 onCardPlayed(data);
 
             }
+
+            if (skullState.gameState === 'GAMEOVER') {
+                setModalIsOpen(true);
+            }
         };
-    }, [])
+    }, [skullState.gameState])
 
 
     const playCard = async (playerId, card) => {
@@ -314,7 +319,10 @@ const Game: FC<Props> = ({
             const response = await fetch(url, {
                 method: "POST",
             });
-
+            if (response.url.includes('login')) {
+                window.location.href = response.url;
+                return;
+            }
             if (!response.ok) {
                 const errorMessage = await response.json();
                 throw new Error(errorMessage.message);
@@ -327,7 +335,6 @@ const Game: FC<Props> = ({
             }, 3000);
         }
     };
-
 
     return <div className="container">
 
@@ -413,26 +420,22 @@ const Game: FC<Props> = ({
         </div>
 
         <ReactModal
-            onRequestClose={() => undefined}
             className="game-over-modal"
             overlayClassName="game-over-overlay"
-        >
-            <div className="game-over">
+            isOpen={modalIsOpen}>
 
-                <button className="button-back"><a href="/game/room">
-                    Retourner à la salle de jeu
-                </a>
-                </button>
-                <h1>Partie terminée</h1>
-                {skullState.gameState === 'GAMEOVER' && (
+            {(skullState.gameState === 'GAMEOVER' && skullState.roundNumber > 10) && (
+                <div className="game-over">
+                    <button className="button-back"><a href="/game/room">
+                        Retourner à la salle de jeu
+                    </a>
+                    </button>
+                    <h1>Partie terminée</h1>
                     <p>Le joueur gagnant est {findWinner().name}</p>
-                )}
-            </div>
+
+                </div>)}
         </ReactModal>
-
     </div>
-
-
 }
 
 export default Game;

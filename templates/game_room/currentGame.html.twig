@@ -1,14 +1,11 @@
 {% extends 'base.html.twig' %}
 
-{% block head %}
-    <link rel="stylesheet" href="{{ asset('css/current_gameroom.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&display=swap" rel="stylesheet">
-{% endblock %}
 
-{% block title %}Hello GameRoomController!{% endblock %}
+{% block title %}Salle de jeu du Skull King{% endblock %}
 
 {% block body %}
 
+    <h1> Salle de Jeux {{ roomid }}</h1>
     <div id="content">
 
         <a href="{{ path('app_game_room') }}" id="back-gameroom-list" class="button">Retourner à l'accueil</a>
@@ -24,7 +21,7 @@
         </div>
 
     </div>
-    
+
 
 
 {% endblock %}

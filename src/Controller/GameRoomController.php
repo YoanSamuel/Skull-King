@@ -8,7 +8,7 @@ use App\Entity\GameRoom;
 use App\Entity\GameRoomUser;
 use App\Entity\SkullKing;
 use App\Repository\GameRoomRepository;
-use App\Repository\SkullKingRepository;
+use App\Security\UserService;
 use DateTimeImmutable;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -17,39 +17,34 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Uid\Uuid;
+
 
 class GameRoomController extends AbstractController
 {
 
     private GameRoomRepository $gameRoomRepository;
     private HubInterface $hub;
-    private SkullKingRepository $skullRepository;
+    private UserService $userService;
 
-    public function __construct(GameRoomRepository  $gameRoomRepository,
-                                SkullKingRepository $skullRepository,
-                                HubInterface        $hub)
+    public function __construct(GameRoomRepository $gameRoomRepository,
+                                HubInterface       $hub,
+                                UserService        $userService)
     {
         $this->gameRoomRepository = $gameRoomRepository;
-        $this->skullRepository = $skullRepository;
         $this->hub = $hub;
-
+        $this->userService = $userService;
     }
 
     #[Route('/game/room', name: 'app_game_room', methods: ["GET"])]
-    public function index(Request $request): Response
+    public function index(): Response
     {
-        if (!$request->cookies->has('userid')) {
-
-            return $this->redirectToRoute('showlogin');
-
-        }
 
         $form = $this->createFormBuilder(null, ["method" => "POST"])
             ->add('Jouer', SubmitType::class)
             ->getForm();
 
-        $userId = new Uuid($request->cookies->get('userid'));
+
+        $userId = $this->userService->getUser()->getUuid();
         $allRooms = $this->gameRoomRepository->findAllAvailable($userId);
         foreach ($allRooms as $room) {
             $room->setContainsCurrentUser($userId);
@@ -68,33 +63,30 @@ class GameRoomController extends AbstractController
     {
 
         $user = new GameRoomUser();
-        $user->setUserName($request->cookies->get('username'));
-        $user->setUserId(new Uuid($request->cookies->get('userid')));
+
+        $authenticated = $this->userService->getUser();
+        $user->setUserName($authenticated->getName());
+        $user->setUserId($authenticated->getUuid());
 
         $gameRoom = new GameRoom();
         $gameRoom->setCreatedAt(new DateTimeImmutable());
         $gameRoom->addUser($user);
 
         $this->gameRoomRepository->save($gameRoom, true);
-        $topicName = "game_room_topic_" . $gameRoom->getId();
-//        $this->hub->publish(new Update($topicName, json_encode([
-//            'status' => 'new_game',
-//            'user' => new UserDTO($user),
-//            'topicName' => $topicName
-//        ])));
 
         return $this->redirectToRoute("waiting_game_room", ['id' => $gameRoom->getId()]);
 
     }
 
     #[Route('/game/room/{id}', name: 'join_game_room', methods: ["POST"])]
-    public function enterInGameRoom(Request $request, $id): Response
+    public function enterInGameRoom($id): Response
     {
 
         $user = new GameRoomUser();
-        $user->setUserName($request->cookies->get('username'));
-        $user->setUserId(new Uuid($request->cookies->get('userid')));
 
+        $authenticated = $this->userService->getUser();
+        $user->setUserName($authenticated->getName());
+        $user->setUserId($authenticated->getUuid());
 
         $currentGame = $this->gameRoomRepository->findOneBy(['id' => $id]);
 
@@ -131,7 +123,7 @@ class GameRoomController extends AbstractController
      * @throws \Exception
      */
     #[Route('/game/room/{id}/game', name: 'enter_in_game', methods: ["POST"])]
-    public function enterInGame(Request $request, $id)
+    public function enterInGame($id)
     {
         $gameRoom = $this->gameRoomRepository->findOneBy(['id' => $id]);
         $users = $gameRoom->getUsers();
@@ -142,7 +134,6 @@ class GameRoomController extends AbstractController
 
         $gameRoom->setSkullKing($skull);
 
-//        $this->skullRepository->save($skull, true);
         $this->gameRoomRepository->save($gameRoom, true);
         $response = $this->redirectToRoute('current_game', ['id' => $skull->getId()]);
         $topicName = "game_room_topic_$id";

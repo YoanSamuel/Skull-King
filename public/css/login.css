@@ -27,24 +27,26 @@ html, body {
     font-size: xxx-large;
 }
 
-#container-form {
+#container-form_login {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 204px;
+    height: 100%;
 }
 
-#form {
+#form_login {
     display: flex;
+    justify-content: center;
     align-items: center;
-    font-size: 16px;
+    flex-direction: column;
+    font-size: 18px;
 }
 
-#form_Nom {
-    padding: 10px;
+.form_input {
+    font-size: 24px;
     border-radius: 5px;
     width: 250px;
-    height: 50px;
+    height: 40px;
 }
 
 .required {

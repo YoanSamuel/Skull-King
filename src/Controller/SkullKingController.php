@@ -2,13 +2,12 @@
 
 namespace App\Controller;
 
-use App\Controller\dto\PlayerDTO;
 use App\Controller\dto\SkullDTO;
-use App\Entity\Player;
 use App\Entity\SkullKing;
 use App\Repository\SkullKingRepository;
-use Doctrine\Common\Collections\Collection;
+use App\Security\UserService;
 use Doctrine\ORM\OptimisticLockException;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,7 +15,6 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Mercure\HubInterface;
 use Symfony\Component\Mercure\Update;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Uid\Uuid;
 
 
 class SkullKingController extends AbstractController
@@ -24,14 +22,16 @@ class SkullKingController extends AbstractController
 
     private SkullKingRepository $skullKingRepo;
     private HubInterface $hub;
+    private UserService $userService;
 
 
     public function __construct(SkullKingRepository $skullKingRepo,
-                                HubInterface        $hub)
+                                HubInterface        $hub,
+                                UserService         $userService)
     {
         $this->skullKingRepo = $skullKingRepo;
         $this->hub = $hub;
-
+        $this->userService = $userService;
     }
 
 
@@ -45,7 +45,7 @@ class SkullKingController extends AbstractController
             $this->redirectToRoute('app_game_room');
         }
 
-        $userId = new Uuid($request->cookies->get('userid'));
+        $userId = $this->userService->getUser()->getUuid();
 
         $announceValues = [];
         for ($i = 0; $i <= $skull->getNbRound(); $i++) {
@@ -68,14 +68,13 @@ class SkullKingController extends AbstractController
     {
 
         $skull = $this->skullKingRepo->find($id);
-        $userId = new Uuid($request->cookies->get('userid'));
+        $userId = $this->userService->getUser()->getUuid();
 
         return new JsonResponse(json_encode(new SkullDTO($skull, $userId)), 200, ['Content-type' => 'application/json'], true);
     }
 
     /**
      * @throws OptimisticLockException
-     * @throws \Doctrine\ORM\ORMException
      */
     #[Route('/game/{id}/announce/{announce}', name: 'announce_before_play_round', methods: ["POST"])]
     public function announce($id, $announce, Request $request): Response
@@ -84,7 +83,7 @@ class SkullKingController extends AbstractController
         $skull = $this->skullKingRepo->find($id);
         try {
 
-            $userId = new Uuid($request->cookies->get('userid'));
+            $userId = $this->userService->getUser()->getUuid();
             $skull->announce($userId, $announce);
 
             $this->skullKingRepo->save($skull, true);
@@ -109,16 +108,14 @@ class SkullKingController extends AbstractController
     }
 
 
-    /**
-     * @throws OptimisticLockException
-     */
     #[Route('/game/{id}/player/{playerId}/playcard/{cardId}', name: 'play_card', methods: ["POST"])]
     public function playCard($id, $cardId, $playerId, Request $request): Response
     {
         /** @var SkullKing $skull */
         $skull = $this->skullKingRepo->find($id);
         try {
-            $userId = new Uuid($request->cookies->get('userid'));
+
+            $userId = $this->userService->getUser()->getUuid();
             $player = $skull->playCard($userId, $cardId);
             $this->skullKingRepo->save($skull, true);
             $topicName = "game_topic_$id";
@@ -134,26 +131,11 @@ class SkullKingController extends AbstractController
 
             return new JsonResponse(null, 200);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
 
             return new JsonResponse(['code' => $e->getCode(),
                 'message' => $e->getMessage()], 400);
         }
-
-
     }
-
-
-    /**
-     * @param Collection $players
-     * @return PlayerDTO[]
-     */
-    public function convertPlayersDTO(Collection $players): array
-    {
-        return $players->map(function (Player $player) {
-            return new PlayerDTO($player);
-        })->toArray();
-    }
-
 
 }

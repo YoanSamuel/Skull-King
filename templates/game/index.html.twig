@@ -1,20 +1,20 @@
 {% extends 'base.html.twig' %}
-{% block stylesheets %}
-
-    {{ encore_entry_link_tags('main') }}
-
+{% block head %}
 {% endblock %}
-{% block title %}Hello SkullController!{% endblock %}
+{% block metaTag %}
+    <meta name="description" content="Partie de SkullKing en cours"/>
+{% endblock %}
+
+{% block title %}Partie de SkullKing {{ skull.id }}{% endblock %}
 
 {% block body %}
-
+    <div id="game-title"></div>
     <div {{ react_component('Game', {
         'announceValues' :  announceValues,
         'eventSourceUrl': mercure(topicName, { subscribe: topicName }),
         'userId': userId,
         'skull': skull,
     }) }}>
-
 
         Loading... <i class="fas fa-cog fa-spin fa-3x"></i>
     </div>
