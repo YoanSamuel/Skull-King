@@ -1,25 +1,32 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Register{% endblock %}
+{% block title %}Inscription SkullKing{% endblock %}
 
 {% block body %}
     {% for flash_error in app.flashes('verify_email_error') %}
         <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
     {% endfor %}
+    <div id="container-form_register">
+        <div id="form_register">
+            <h1>Intégrer la piraterie dès maintenant</h1>
+            <div id="login_redirect"><a href="/login" class="btn">Déja Pirate? Connectez vous ! </a></div>
+            {{ form_start(registrationForm) }}
+            <div class="form-group">
+                {{ form_label(registrationForm.name, 'Nom de pirate', {'label_attr': {'class': 'required'}}) }}
+                {{ form_widget(registrationForm.name, {'attr': {'class': 'form_input'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(registrationForm.email, 'Adresse e-mail', {'label_attr': {'class': 'required'}}) }}
+                {{ form_widget(registrationForm.email, {'attr': {'class': 'form_input'}}) }}
+            </div>
+            <div class="form-group">
+                {{ form_label(registrationForm.plainPassword, 'Mot de passe', {'label_attr': {'class': 'required'}}) }}
+                {{ form_widget(registrationForm.plainPassword, {'attr': {'class': 'form_input'}}) }}
+            </div>
 
-    <h1>Register</h1>
-
-    {{ form_start(registrationForm) }}
-    {{ form_row(registrationForm.name) }}
-    {{ form_row(registrationForm.email) }}
-    {{ form_row(registrationForm.plainPassword, {
-        label: 'Password'
-    }) }}
-
-    <button type="submit" class="btn">Register</button>
-    {{ form_end(registrationForm) }}
-
-
-
-    <div style="margin-top: 50px;"><a href="/login" class="btn">Déja Utilisateur? Connectez vous ! </a></div>
+            <button type="submit" id="btn-register">S'inscrire</button>
+            {{ form_end(registrationForm) }}
+        </div>
+    </div>
+    </div>
 {% endblock %}

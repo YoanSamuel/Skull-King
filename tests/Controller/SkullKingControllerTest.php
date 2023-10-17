@@ -3,18 +3,36 @@
 namespace App\Tests\Controller;
 
 use App\Entity\SkullKing;
+use App\Entity\User;
 use App\Repository\SkullKingRepository;
+use App\Repository\UserRepository;
+use Doctrine\ORM\Tools\SchemaTool;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\Uid\Uuid;
 
 class SkullKingControllerTest extends WebTestCase
 {
-    public function testSomething(): void
-    {
-        static::bootKernel();
 
+    protected function setUp(): void
+    {
+        $kernel = self::bootKernel();
+
+        $this->entityManager = $kernel->getContainer()
+            ->get('doctrine')
+            ->getManager();
+
+        //In case leftover entries exist
+        $schemaTool = new SchemaTool($this->entityManager);
+        $metadata = $this->entityManager->getMetadataFactory()->getAllMetadata();
+
+        // Drop and recreate tables for all entities
+        $schemaTool->dropSchema($metadata);
+        $schemaTool->createSchema($metadata);
+    }
+
+    public function testFlow(): void
+    {
         $billId = Uuid::v4();
         $jeanId = Uuid::v4();
         $bill = $this->initializeUser('bill', $billId);
@@ -38,10 +56,10 @@ class SkullKingControllerTest extends WebTestCase
         $this->assertEquals(302, $response->getStatusCode());
 
         $bill->request('POST', $redirectLocation . "/announce/0");
-        $jean->request('POST', $redirectLocation . "/announce/0");
+        $jean->request('POST', $redirectLocation . "/announce/1");
         $this->assertEquals(302, $bill->getResponse()->getStatusCode());
         $this->assertEquals(302, $jean->getResponse()->getStatusCode());
-        $crawler = $bill->request('GET', $redirectLocation);
+        $bill->request('GET', $redirectLocation);
 
         /** @var SkullKingRepository $skullRepository */
         $skullRepository = static::getContainer()->get(SkullKingRepository::class);
@@ -52,13 +70,14 @@ class SkullKingControllerTest extends WebTestCase
         $billPlayer = $skull->findPlayerByUserId($billId);
         $jeanCard = $jeanPlayer->getCards()->first()->getId();
         $billCard = $billPlayer->getCards()->first()->getId();
+
         $bill->request('POST', $redirectLocation . "/player/unused/playcard/" . $billCard);
         $jean->request('POST', $redirectLocation . "/player/unused/playcard/" . $jeanCard);
 
-        /** @var SkullKing $skull */
-        $skull = $skullRepository->find($id[2]);
-        $this->assertEquals(2, $skull->getNbRound());
+        $jean->request('GET', '/api/game/' . $id[2]);
 
+        $jsonSkull = json_decode($jean->getResponse()->getContent(), true);
+        $this->assertEquals(2, $jsonSkull["roundNumber"]);
     }
 
     /**
@@ -70,10 +89,20 @@ class SkullKingControllerTest extends WebTestCase
     {
         /** @var KernelBrowser $client */
         $client = static::getContainer()->get('test.client');
-        $usernameCookie = new Cookie('username', $username);
-        $userIdCookie = new Cookie('userid', $userId->toRfc4122());
-        $client->getCookieJar()->set($usernameCookie);
-        $client->getCookieJar()->set($userIdCookie);
+        $client->insulate();
+
+        /** @var UserRepository $userRepository */
+        $userRepository = static::getContainer()->get(UserRepository::class);
+
+        $user = new User();
+        $user->setEmail($username . "@gmail.com");
+        $user->setName($username);
+        $user->setUuid($userId);
+        $user->setPassword("toto");
+
+        $userRepository->save($user);
+
+        $client->loginUser($user);
 
         return $client;
     }

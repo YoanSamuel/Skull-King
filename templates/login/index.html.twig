@@ -14,8 +14,9 @@
 
 
         <form id="form_login" action="{{ path('app_login') }}" method="post">
-            <div><a href="/register" class="btn">Créer un compte ! </a></div>
-            
+            <h1>Bienvenue Pirate</h1>
+            <div id="account_redirect"><a href="/register" id="account_create">Créer un compte ! </a></div>
+
             <label for="username">Email</label>
             <input class="form_input" type="text" id="username" name="_username" value="{{ last_username }}">
 

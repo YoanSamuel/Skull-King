@@ -15,26 +15,46 @@ html, body {
     position: relative;
 }
 
-#container-title {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 204px;
-}
 
 #login-title {
     text-align: center;
     font-size: xxx-large;
 }
 
-#container-form_login {
+#container-form_login, #container-form_register {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100%;
 }
 
-#form_login {
+#account_redirect {
+    margin: 25px;
+    transition: transform 0.2s ease-in-out;
+}
+
+#account_redirect:hover, #login_redirect:hover {
+    transform: scale(1.10);
+}
+
+#account_create, #login_redirect, #btn-register {
+    font-size: x-large;
+    background-color: #f39c01;
+    padding: 10px;
+    border-radius: 7px;
+    text-decoration: none;
+    color: white;
+    margin-bottom: 25px;
+    transition: transform 0.2s ease-in-out;
+}
+
+#btn-register {
+    display: block;
+    margin: 0 auto;
+    text-align: center;
+}
+
+#form_login, #form_register {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -42,8 +62,18 @@ html, body {
     font-size: 18px;
 }
 
-.form_input {
-    font-size: 24px;
+.btn {
+    text-decoration: none;
+    color: white;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.form_input, #registration_form_name, #registration_form_email, #registration_form_plainPassword {
     border-radius: 5px;
     width: 250px;
     height: 40px;
@@ -70,9 +100,10 @@ html, body {
 
 #form_Entrer:hover {
     background-color: #f39c12;
-    transform: scale(1.05);
+    transform: scale(1.10);
 }
 
 label {
+    text-align: center;
     margin: 10px;
 }
