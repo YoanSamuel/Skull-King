@@ -3,9 +3,6 @@
 {% block title %}Inscription SkullKing{% endblock %}
 
 {% block body %}
-    {% for flash_error in app.flashes('verify_email_error') %}
-        <div class="alert alert-danger" role="alert">{{ flash_error }}</div>
-    {% endfor %}
     <div id="container-form_register">
         <div id="form_register">
             <h1>Intégrer la piraterie dès maintenant</h1>
@@ -18,6 +15,11 @@
             <div class="form-group">
                 {{ form_label(registrationForm.email, 'Adresse e-mail', {'label_attr': {'class': 'required'}}) }}
                 {{ form_widget(registrationForm.email, {'attr': {'class': 'form_input'}}) }}
+                {% if form_errors(registrationForm.email) %}
+                    <div class="error-banner">
+                        {{ form_errors(registrationForm.email) }}
+                    </div>
+                {% endif %}
             </div>
             <div class="form-group">
                 {{ form_label(registrationForm.plainPassword, 'Mot de passe', {'label_attr': {'class': 'required'}}) }}
@@ -26,7 +28,8 @@
 
             <button type="submit" id="btn-register">S'inscrire</button>
             {{ form_end(registrationForm) }}
+            <h4>Le mot de passe doit contenir au moins une majuscule, un chiffre et un caractère
+                spécial(_,$,!,%,*,?,&,@) et au moins de 8 caractères.</h4>
         </div>
-    </div>
     </div>
 {% endblock %}

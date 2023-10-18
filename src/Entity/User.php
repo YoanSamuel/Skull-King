@@ -4,11 +4,14 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
+#[UniqueEntity('email', message: 'Cette adresse email est déjà utilisée.')]
 #[ORM\Table(name: '`user`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -29,10 +32,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private array $roles = [];
 
-    /**
-     * @var string The hashed password
-     */
     #[ORM\Column]
+    #[Assert\Regex(
+        pattern: "/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&_|-]){8,}$/",
+        message: "Le mot de passe doit contenir au moins une majuscule, un chiffre et un caractère spécial(-,_,$,!,%,*,?,&,@) et au moins de 8 caractères."
+    )]
     private ?string $password = null;
 
     public function getId(): ?int
