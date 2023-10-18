@@ -42,7 +42,7 @@ jobs:
         run: composer install --prefer-dist
 
       - name: Run tests
-        run: php bin/console doctrine:schema:update -f --no-interaction && ./vendor/bin/phpunit
+        run: php bin/console doctrine:migrations:migrate  && ./vendor/bin/phpunit
         env:
           POSTGRES_HOST: localhost
 
