@@ -8,7 +8,8 @@
     <h1> Salle de Jeux {{ roomid }}</h1>
     <div id="content">
 
-        <a href="{{ path('app_game_room') }}" id="back-gameroom-list" class="button">Retourner à l'accueil</a>
+        <a href="{{ path('app_game_room') }}" id="back-gameroom-list" class="button" aria-label="Back">Retourner à
+            l'accueil</a>
 
         <div {{ react_component('CurrentGameRoom', {
             'users': users,

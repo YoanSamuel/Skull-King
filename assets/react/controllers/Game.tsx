@@ -138,34 +138,35 @@ const Fold: FC<{ skullKing: SkullKing, currentUserId: string }> = ({skullKing, c
         <div className="fold">
             <img src="/images/table.png" alt="table"/>
             {config.map((cell, index) => <div key={index + 1} className="fold-slot" style={{
-                justifyContent: cell.justifyContent,
-                alignItems: cell.alignItems,
-            }}>
-                {!cell.player
-                    ? undefined
-                    : <div className="player-info" style={cell.position}>
-                        <p>{cell.player.name}</p>
-                        {displayPlayerAnnounce(cell.player)}
+                    justifyContent: cell.justifyContent,
+                    alignItems: cell.alignItems,
+                }}>
+                    {!cell.player
+                        ? undefined
+                        : <div className="player-info" style={cell.position}>
+                            <p>{cell.player.name}</p>
+                            {displayPlayerAnnounce(cell.player)}
 
-                        {skullKing.fold
-                            .map((card) => {
-                                const playingPlayer = skullKing.players.find(p => p.id === String(card.playerId));
-                                if (!playingPlayer || cell.player.id != card.playerId) {
-                                    return null;
-                                }
+                            {skullKing.fold
+                                .map((card) => {
+                                    const playingPlayer = skullKing.players.find(p => p.id === String(card.playerId));
+                                    if (!playingPlayer || cell.player.id != card.playerId) {
+                                        return null;
+                                    }
 
-                                return (
-                                    <div key={card.id} className="card folded-card">
-                                        <span className="player-name">{playingPlayer?.name}</span>
-                                        <img src={`/images/game/cards/${card.id}.png`}
-                                             alt={card.id}
-                                        />
-                                    </div>
-                                );
-                            })}
-                    </div>
-                }
-            </div>)}
+                                    return (
+                                        <div key={card.id} className="card folded-card">
+                                            <span className="player-name">{playingPlayer?.name}</span>
+                                            <img src={`/images/game/cards/${card.id}.png`}
+                                                 alt={card.id}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                        </div>
+                    }
+                </div>
+            )}
         </div>
     </>
 }
@@ -183,7 +184,7 @@ const Game: FC<Props> = ({
     const [winMessageFold, setWinMessageFold] = useState(null);
     const [modalIsOpen, setModalIsOpen] = useState(false);
     let currentPlayer = skullState.players.find((player) => player.userId === currentUserId);
-    console.log(skullState);
+    console.log(skullState, modalIsOpen);
 
     const calculateTotalScore = (playerId) => {
         let totalScore = 0;
@@ -336,6 +337,8 @@ const Game: FC<Props> = ({
         }
     };
 
+    // @ts-ignore
+    // @ts-ignore
     return <div className="container">
 
         {error && <div className={`error-message ${error ? 'show' : ''}`}>{error}</div>}
@@ -351,7 +354,7 @@ const Game: FC<Props> = ({
             <div className="button-container-announce">
 
                 {
-                    (skullState.gameState === 'ANNOUNCE') && announceValues.map((announce) => {
+                    (skullState.gameState === 'ANNOUNCE') && Array.from({length: Math.max(...skullState.players.map(player => player.cards.length)) + 1}, (_, i) => i).map((announce) => {
                         return <form key={announce} action={`/game/${skullState.id}/announce/${announce}`}
                                      method="POST">
                             <button type="submit" id="announce-button"> {announce} </button>
@@ -426,12 +429,12 @@ const Game: FC<Props> = ({
 
             {(skullState.gameState === 'GAMEOVER' && skullState.roundNumber > 10) && (
                 <div className="game-over">
-                    <button className="button-back"><a href="/game/room">
+                    <button className="button-back" aria-description="Retourner aux salon de jeux"><a href="/game/room">
                         Retourner à la salle de jeu
                     </a>
                     </button>
                     <h1>Partie terminée</h1>
-                    <p>Le joueur gagnant est {findWinner().name}</p>
+                    <h4>Le roi des pirates est {findWinner().name}</h4>
 
                 </div>)}
         </ReactModal>

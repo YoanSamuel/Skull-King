@@ -37,7 +37,8 @@
                                     </form>
                                 {% endif %}
                                 {% if room.containsCurrentUser == true %}
-                                    <button><a href="{{ path('waiting_game_room', { id: room.id }) }}">Aller dans la
+                                    <button aria-label="Go to GameRoom"><a
+                                                href="{{ path('waiting_game_room', { id: room.id }) }}">Aller dans la
                                             Salle de
                                             jeux</a></button>
                                 {% endif %}

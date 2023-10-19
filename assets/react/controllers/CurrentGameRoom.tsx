@@ -12,10 +12,10 @@ type Props = {
     pathCurrentGame: string;
     eventSourceUrl: string;
 }
-
 const CurrentGameRoom: FC<Props> = ({users, skullkingid, pathEnterGameRoom, pathCurrentGame, eventSourceUrl}) => {
 
     const [usersState, setUsersState] = useState(users);
+    console.log(users);
 
     useEffect(() => {
         const eventSource = new EventSource(eventSourceUrl);
@@ -50,9 +50,12 @@ const CurrentGameRoom: FC<Props> = ({users, skullkingid, pathEnterGameRoom, path
             usersState.length > 1
                 ? (!skullkingid
                     ? <form action={pathEnterGameRoom} method="POST">
-                        <button type="submit" id="launch-game" className="button"> Démarrer la partie</button>
+                        <button type="submit" id="launch-game" className="button"
+                                aria-description="Démarrer la partie"> Démarrer
+                            la partie
+                        </button>
                     </form>
-                    : <a href={pathCurrentGame} id="join-game" className="button">
+                    : <a href={pathCurrentGame} id="join-game" className="button" aria-description="Rejoindre la partie">
                         Rejoindre la partie en cours
                     </a>)
                 : undefined
